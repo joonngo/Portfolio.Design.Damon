@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="Damon.13 — Thong Ngo, Creative Leader & Brand Designer, Ho Chi Minh City. 5+ years in Brand Identity, Digital Product, POSM & Social Media."/>
+<title>Damon.13 — Thong Ngo · Creative Leader & Brand Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+
+<style>
+/* ── TH-Guton → Bebas Neue fallback ── */
+@font-face{
+  font-family:'TH-Guton';
+  src:url('https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/bebasneue/BebasNeue-Regular.ttf') format('truetype');
+  font-weight:400 900;font-display:swap;
+}
+
+/* ════════════════════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--bg);color:var(--fg);
+  min-height:100vh;overflow-x:hidden;cursor:none;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%;height:auto}
+button{border:none;background:none;cursor:none;font:inherit;color:inherit}
+@media(pointer:coarse){body{cursor:auto}button{cursor:pointer}}
+
+/* ════════════════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════════════════ */
+:root{
+  --pad:clamp(20px,5.5vw,88px);
+  /* Palette */
+  --blue:#0047FF;
+  --blue-dk:#0033cc;
+  /* OFF-DARK + OFF-WHITE — softer contrast than pure black/white */
+  --dark:#0a0a0a;        /* near-black page bg */
+  --dark2:#111116;       /* slightly lighter dark surface */
+  --dark3:#1c1c22;       /* card/border surface */
+  --light:#f4f3f0;       /* off-white — not pure #fff, warmer */
+  --light2:#ebebea;      /* subtle card in light sections */
+  --gray:#888;
+  --border-d:rgba(255,255,255,.07);
+  --border-l:rgba(0,0,0,.07);
+  --fg-d:#e8e6e0;        /* main text on dark */
+  --fg-d2:#666;          /* muted on dark */
+  --fg-d3:#2a2a2a;
+  --fg-l:#18181a;        /* main text on light */
+  --fg-l2:#666;
+  /* Active section vars (swapped by section) */
+  --bg:var(--dark);--fg:var(--fg-d);
+  /* Fonts */
+  --f-head:'TH-Guton','Bebas Neue',Impact,sans-serif;
+  --f-body:'DM Sans',system-ui,sans-serif;
+  /* Easing */
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-io:cubic-bezier(.77,0,.175,1);
+}
+
+/* ════════════════════════════════════════════════════
+   SECTION TRANSITIONS — clean hard edges, no gradient bleed
+════════════════════════════════════════════════════ */
+
+/* Base: dark sections */
+.s-dark{
+  background:var(--dark);
+  color:var(--fg-d);
+  position:relative;
+}
+
+/* Light sections — off-white */
+.s-light{
+  background:var(--light);
+  color:var(--fg-l);
+  position:relative;
+}
+
+/* Mid-dark (#111116) variant */
+.s-mid{
+  background:var(--dark2);
+  color:var(--fg-d);
+  position:relative;
+}
+
+/* No gradient overlays — clean cuts */
+.s-dark > .wrap,
+.s-light > .wrap,
+.s-mid > .wrap,
+.s-dark > .inner,
+.s-light > .inner{position:relative;z-index:3}
+
+/* ════════════════════════════════════════════════════
+   CURSOR
+════════════════════════════════════════════════════ */
+#cur{
+  position:fixed;width:6px;height:6px;background:#fff;border-radius:50%;
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+  transition:width .15s,height .15s,opacity .15s,background .25s;
+}
+#cur-ring{
+  position:fixed;width:32px;height:32px;
+  border:1px solid rgba(255,255,255,.3);border-radius:50%;
+  pointer-events:none;z-index:9998;transform:translate(-50%,-50%);
+  transition:width .35s var(--ease-out),height .35s var(--ease-out),border-color .3s,background .3s;
+}
+/* Cursor glow — large radial blob that follows mouse on dark sections */
+#cur-glow{
+  position:fixed;
+  width:480px;height:480px;
+  border-radius:50%;
+  pointer-events:none;z-index:1;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(0,71,255,.10) 0%,rgba(0,71,255,.04) 35%,transparent 70%);
+  transition:opacity .5s var(--ease-out);
+  will-change:left,top;
+  opacity:0;
+}
+body.glow-active #cur-glow{opacity:1}
+body.on-light #cur-glow{opacity:0!important}
+
+body.hovering #cur{width:0;height:0;opacity:0}
+body.hovering #cur-ring{width:50px;height:50px;background:var(--blue);border-color:var(--blue);opacity:.45}
+body.pressing #cur-ring{transform:translate(-50%,-50%) scale(.82)}
+body.on-light #cur{background:var(--blue)}
+body.on-light #cur-ring{border-color:rgba(0,71,255,.25)}
+
+/* ════════════════════════════════════════════════════
+   BIG TITLE HOVER ANIMATION — per-word flip (Y axis)
+   No DOM mutation — uses CSS only on .h-word wrappers
+   and JS only adds inline style, never rewrites innerHTML
+════════════════════════════════════════════════════ */
+.t-disp,.t-h1,.t-h2,.h-head,.ab-name,.testi-q,.cta-s h2{
+  cursor:default;
+}
+/* Words inside big titles that already have .h-word, or added by JS */
+.flip-word{
+  display:inline-block;
+  perspective:500px;
+  transition:transform .42s cubic-bezier(.22,1,.36,1);
+  will-change:transform;
+  transform-style:preserve-3d;
+}
+
+/* ════════════════════════════════════════════════════
+   SCROLL PROGRESS + SCROLL-TO-TOP
+════════════════════════════════════════════════════ */
+#prog{position:fixed;top:0;left:0;height:2px;width:0;background:var(--blue);z-index:9000;transition:width .08s linear}
+#stt{
+  position:fixed;bottom:clamp(16px,3vw,32px);right:clamp(16px,3vw,32px);
+  width:44px;height:44px;background:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  z-index:700;opacity:0;pointer-events:none;transform:translateY(12px);
+  transition:opacity .35s var(--ease-out),transform .35s var(--ease-out);
+}
+#stt.on{opacity:1;pointer-events:auto;transform:translateY(0)}
+#stt:hover{background:var(--blue-dk)}
+#stt svg{color:#fff;transition:transform .2s}
+#stt:hover svg{transform:translateY(-2px)}
+
+/* ════════════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════════════ */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:800;
+  padding:clamp(14px,2.2vw,24px) var(--pad);
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  transition:background .5s var(--ease-io),padding .4s,box-shadow .5s;
+}
+#nav.scrolled{
+  background:rgba(0,71,255,.97);padding:11px var(--pad);
+  box-shadow:0 2px 40px rgba(0,71,255,.28);backdrop-filter:blur(8px);
+}
+.n-logo{
+  font-family:var(--f-head);font-size:clamp(18px,2.2vw,24px);font-weight:400;
+  letter-spacing:.06em;color:var(--fg-d);
+  display:flex;align-items:center;gap:10px;transition:color .4s;flex-shrink:0;
+}
+.n-logo-box{
+  width:28px;height:28px;background:var(--blue);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-body);font-size:8px;font-weight:700;color:#fff;letter-spacing:.05em;
+  transition:background .4s;flex-shrink:0;
+}
+#nav.scrolled .n-logo{color:#fff}
+#nav.scrolled .n-logo-box{background:rgba(255,255,255,.18)}
+.n-links{display:flex;align-items:center;gap:clamp(14px,2.5vw,36px)}
+.n-link{
+  font-family:var(--f-body);font-size:11px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--fg-d2);position:relative;transition:color .22s;white-space:nowrap;
+}
+.n-link::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:currentColor;transition:width .26s var(--ease-out)}
+.n-link:hover,.n-link.on{color:var(--fg-d)}
+.n-link:hover::after,.n-link.on::after{width:100%}
+#nav.scrolled .n-link{color:rgba(255,255,255,.6)}
+#nav.scrolled .n-link:hover,#nav.scrolled .n-link.on{color:#fff}
+.n-cta{
+  font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:#fff;background:var(--blue);padding:9px 20px;border:1.5px solid var(--blue);
+  transition:all .22s;flex-shrink:0;white-space:nowrap;
+}
+.n-cta:hover{background:transparent;color:var(--blue)}
+#nav.scrolled .n-cta{background:#fff;color:var(--blue);border-color:#fff}
+#nav.scrolled .n-cta:hover{background:rgba(255,255,255,.15);color:#fff}
+.ham{display:none;flex-direction:column;gap:5px;padding:4px;flex-shrink:0;cursor:pointer}
+.ham span{display:block;width:22px;height:1.5px;background:var(--fg-d);transition:all .3s var(--ease-out)}
+#nav.scrolled .ham span{background:#fff}
+.ham.open span:first-child{transform:rotate(45deg) translate(4.5px,4.5px)}
+.ham.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.ham.open span:last-child{transform:rotate(-45deg) translate(4.5px,-4.5px)}
+#m-nav{
+  display:none;position:fixed;inset:0;background:var(--dark);z-index:790;
+  flex-direction:column;align-items:center;justify-content:center;gap:clamp(20px,5vw,36px);
+  padding:var(--pad);opacity:0;transition:opacity .35s var(--ease-out);
+}
+#m-nav.open{display:flex;opacity:1}
+.m-link{font-family:var(--f-head);font-size:clamp(40px,12vw,72px);font-weight:400;letter-spacing:.06em;transition:color .2s;text-transform:uppercase}
+.m-link:hover{color:var(--blue)}
+
+/* ════════════════════════════════════════════════════
+   PAGE SYSTEM
+════════════════════════════════════════════════════ */
+.page{display:none;min-height:100vh}
+.page.on{display:block}
+.page-in{animation:pgIn .5s var(--ease-out) both}
+@keyframes pgIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ════════════════════════════════════════════════════
+   TYPOGRAPHY
+════════════════════════════════════════════════════ */
+.t-disp{font-family:var(--f-head);font-size:clamp(56px,11vw,160px);font-weight:400;line-height:.88;letter-spacing:.02em;text-transform:uppercase}
+.t-h1{font-family:var(--f-head);font-size:clamp(40px,6.5vw,96px);font-weight:400;line-height:.92;letter-spacing:.02em;text-transform:uppercase}
+.t-h2{font-family:var(--f-head);font-size:clamp(28px,4vw,64px);font-weight:400;letter-spacing:.02em;line-height:.92;text-transform:uppercase}
+.t-h3{font-family:var(--f-body);font-size:clamp(14px,1.4vw,18px);font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.t-body{font-family:var(--f-body);font-size:clamp(13px,.95vw,15px);font-weight:400;line-height:1.85;max-width:52ch;color:inherit}
+.t-over{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gray)}
+
+/* Reveal animations */
+.blur-reveal{filter:blur(14px);opacity:0;transition:filter 1.1s var(--ease-out),opacity 1.1s var(--ease-out)}
+.blur-reveal.in{filter:blur(0);opacity:1}
+.rev{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
+.rev.in{opacity:1;transform:none}
+.rev-l{opacity:0;transform:translateX(-26px);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
+.rev-l.in{opacity:1;transform:none}
+.rev-s{opacity:0;transform:scale(.96);transition:opacity .85s var(--ease-out),transform .85s var(--ease-out)}
+.rev-s.in{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.18s}.d3{transition-delay:.28s}
+.d4{transition-delay:.38s}.d5{transition-delay:.48s}
+
+/* ════════════════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════════════════ */
+.wrap{max-width:1400px;margin:0 auto;padding:0 var(--pad)}
+.g12{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(16px,2vw,32px)}
+.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}
+.col-7{grid-column:span 7}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+.col-start-2{grid-column-start:2}.col-start-3{grid-column-start:3}
+.col-start-4{grid-column-start:4}.col-start-6{grid-column-start:6}.col-start-7{grid-column-start:7}.col-start-8{grid-column-start:8}
+.sp{padding:clamp(88px,12vw,160px) 0}
+.sp-lg{padding:clamp(120px,16vw,200px) 0}
+.sp-sm{padding:clamp(56px,8vw,96px) 0}
+.sec-label{display:flex;align-items:center;gap:16px;margin-bottom:clamp(48px,6vw,80px)}
+.sec-label::after{content:'';flex:1;height:1px;background:currentColor;opacity:.08}
+
+/* ════════════════════════════════════════════════════
+   MARQUEE
+════════════════════════════════════════════════════ */
+.mq-wrap{overflow:hidden;padding:14px 0;border-top:1px solid;border-bottom:1px solid}
+.mq-dark-border{border-color:var(--border-d)}
+.mq-light-border{border-color:var(--border-l)}
+.mq-track{display:flex;white-space:nowrap;animation:mqF 28s linear infinite}
+.mq-track-r{display:flex;white-space:nowrap;animation:mqB 32s linear infinite}
+.mq-item{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;padding:0 clamp(24px,3.5vw,48px);border-right:1px solid currentColor;color:var(--fg-d2)}
+.mq-item .dot{color:var(--blue);margin-right:10px}
+@keyframes mqF{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes mqB{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+
+/* ════════════════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:clamp(13px,1.5vw,16px) clamp(28px,3vw,44px);
+  transition:color .28s var(--ease-out),border-color .28s var(--ease-out),background .28s var(--ease-out);
+  white-space:nowrap;position:relative;overflow:hidden;
+}
+.btn-p{background:var(--blue);color:#fff;border:1.5px solid var(--blue);transition:color .28s var(--ease-out)}
+.btn-p::before{content:'';position:absolute;inset:0;background:#fff;transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease-out);z-index:0}
+.btn-p:hover::before{transform:scaleX(1)}.btn-p:hover{color:#111}.btn-p>*{position:relative;z-index:1}
+.btn-od{border:1.5px solid rgba(232,230,224,.18);color:var(--fg-d);background:transparent}
+.btn-od:hover{border-color:var(--blue);color:var(--blue)}
+.btn-ol-d{border:1.5px solid rgba(232,230,224,.25);color:var(--fg-d);background:transparent}
+.btn-ol-d:hover{background:var(--fg-d);color:var(--dark)}
+.btn-ol{border:1.5px solid var(--blue);color:var(--blue);background:transparent}
+.btn-ol:hover{background:var(--blue);color:#fff}
+.btn-dark{background:var(--fg-l);color:var(--light);border:1.5px solid var(--fg-l)}
+.btn-dark:hover{background:transparent;color:var(--fg-l)}
+.btn svg{transition:transform .22s var(--ease-out);flex-shrink:0}
+.btn:hover svg{transform:translate(3px,-3px)}.btn:active{transform:scale(.97)}
+
+/* ════════════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════════════ */
+.hero{
+  min-height:100svh;display:flex;flex-direction:column;
+  justify-content:flex-end;position:relative;overflow:hidden;
+  background:var(--dark);
+  padding-bottom:clamp(56px,8vw,100px);padding-top:clamp(100px,12vw,140px);
+}
+.h-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,71,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,71,255,.022) 1px,transparent 1px);background-size:80px 80px;animation:gMv 24s linear infinite}
+@keyframes gMv{to{background-position:80px 80px}}
+.h-orb{position:absolute;border-radius:50%;pointer-events:none}
+.h-orb-a{width:min(900px,110vw);height:min(900px,110vw);background:radial-gradient(rgba(0,71,255,.09),transparent 65%);top:-30%;right:-20%;animation:o1 18s ease-in-out infinite}
+.h-orb-b{width:min(600px,80vw);height:min(600px,80vw);background:radial-gradient(rgba(0,71,255,.05),transparent 65%);bottom:-20%;left:-15%;animation:o2 22s ease-in-out infinite}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,40px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,-45px)}}
+.h-pts{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.pt{position:absolute;border-radius:50%;animation:ptU linear infinite}
+@keyframes ptU{0%{opacity:0;transform:translateY(102vh)}8%{opacity:.6}90%{opacity:.1}100%{opacity:0;transform:translateY(-5vh)}}
+.h-badge{position:absolute;top:clamp(88px,11vw,130px);right:var(--pad);width:clamp(80px,8vw,104px);height:clamp(80px,8vw,104px);animation:bSpin 26s linear infinite}
+@keyframes bSpin{to{transform:rotate(360deg)}}
+.h-badge-dot{position:absolute;width:6px;height:6px;background:var(--blue);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,71,255,.5)}50%{box-shadow:0 0 0 10px rgba(0,71,255,0)}}
+.h-pill{display:inline-flex;align-items:center;gap:10px;background:rgba(0,71,255,.08);border:1px solid rgba(0,71,255,.22);padding:7px 18px;width:fit-content;font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:clamp(20px,3vw,36px);animation:fU .7s .2s var(--ease-out) both}
+.h-pill-dot{width:6px;height:6px;background:var(--blue);border-radius:50%;flex-shrink:0;animation:pulse 2.2s ease-in-out infinite}
+@keyframes fU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.h-head{font-family:var(--f-head);font-size:clamp(52px,10.5vw,160px);font-weight:400;line-height:.88;letter-spacing:.02em;text-transform:uppercase;margin-bottom:clamp(32px,5vw,56px)}
+.h-line{overflow:hidden;display:block}.h-word{display:inline-block}
+.h-bot{display:flex;align-items:flex-end;justify-content:space-between;gap:clamp(24px,4vw,48px);flex-wrap:wrap;animation:fU .9s 1.1s var(--ease-out) both}
+.h-desc{max-width:min(440px,100%)}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:20px}
+.h-scroll{display:flex;align-items:center;gap:12px;font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-d2)}
+.h-scroll-line{width:48px;height:1px;background:var(--fg-d2);animation:lG 1.5s 1.9s var(--ease-out) both;transform-origin:left;transform:scaleX(0)}
+@keyframes lG{to{transform:scaleX(1)}}
+.h-stats{display:flex;gap:clamp(24px,4vw,40px);flex-wrap:wrap}
+.stat-n{font-family:var(--f-head);font-size:clamp(24px,3.5vw,36px);font-weight:400;color:var(--fg-d);letter-spacing:.02em;line-height:1}
+.stat-l{font-family:var(--f-body);font-size:9px;font-weight:600;color:var(--fg-d2);letter-spacing:.12em;text-transform:uppercase;margin-top:5px}
+.h-sep{height:1px;background:linear-gradient(90deg,var(--blue) 0%,transparent 60%);opacity:.3}
+
+/* ════════════════════════════════════════════════════
+   HOME SECTIONS
+════════════════════════════════════════════════════ */
+/* Intro */
+.intro{padding:clamp(120px,16vw,200px) 0 clamp(100px,13vw,160px)}
+.intro-kicker{width:36px;height:2px;background:var(--blue);margin-bottom:clamp(20px,3vw,32px)}
+.intro-quote{font-family:var(--f-body);font-size:clamp(14px,1.3vw,17px);font-weight:400;line-height:1.8;color:var(--fg-l2);max-width:44ch;border-left:2px solid var(--blue);padding-left:clamp(16px,2vw,24px);margin-top:clamp(28px,4vw,44px)}
+
+/* Services */
+.services{padding:clamp(100px,14vw,180px) 0}
+.svc{border-top:1px solid var(--border-d);display:grid;grid-template-columns:clamp(44px,5vw,72px) 1fr auto;align-items:center;gap:clamp(16px,2.5vw,32px);padding:clamp(22px,3vw,32px) 0;position:relative;overflow:hidden;transition:padding-left .32s var(--ease-out);cursor:pointer}
+.svc:hover{padding-left:clamp(10px,1.5vw,18px)}
+.svc-fill{position:absolute;inset:0;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform .45s var(--ease-io);z-index:0}
+.svc:hover .svc-fill{transform:scaleX(1)}
+.svc>*:not(.svc-fill){position:relative;z-index:1;transition:color .32s}
+.svc:hover .svc-n,.svc:hover .svc-name,.svc:hover .svc-sub,.svc:hover .svc-arr{color:#fff}
+.svc-n{font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--fg-d2)}
+.svc-name{font-family:var(--f-head);font-size:clamp(20px,2.5vw,36px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-d)}
+.svc-sub{font-family:var(--f-body);font-size:12px;color:var(--fg-d2);margin-top:3px}
+.svc-arr{font-size:22px;color:var(--fg-d2);flex-shrink:0}
+
+/* Work list */
+.works-w{padding:clamp(100px,14vw,180px) 0}
+.wi{border-top:1px solid var(--border-l);display:grid;grid-template-columns:clamp(40px,4.5vw,64px) 1fr auto;align-items:center;gap:clamp(16px,2.5vw,36px);padding:clamp(20px,3vw,28px) 0;position:relative;overflow:hidden;cursor:pointer;transition:padding-left .32s var(--ease-out)}
+@media(min-width:700px){.wi{grid-template-columns:clamp(40px,4.5vw,64px) 1fr 180px auto}}
+.wi:hover{padding-left:clamp(10px,1.5vw,14px)}
+.wi-fill{position:absolute;inset:0;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform .45s var(--ease-io);z-index:0}
+.wi:hover .wi-fill{transform:scaleX(1)}
+.wi>*:not(.wi-fill){position:relative;z-index:1;transition:color .32s}
+.wi:hover .wi-n,.wi:hover .wi-title,.wi:hover .wi-cat,.wi:hover .wi-arr,.wi:hover .wi-tag{color:#fff}
+.wi:hover .wi-tag{border-color:rgba(255,255,255,.2)}
+.wi-n{font-family:var(--f-body);font-size:11px;font-weight:600;color:var(--fg-l2)}
+.wi-title{font-family:var(--f-head);font-size:clamp(20px,2.5vw,38px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-l)}
+.wi-cat{font-family:var(--f-body);font-size:11px;color:var(--fg-l2);margin-top:3px}
+.wi-tags{display:flex;gap:8px;flex-wrap:wrap}
+.wi-tag{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border-l);padding:3px 10px;color:var(--fg-l2);transition:border-color .32s,color .32s}
+.wi-arr{font-size:20px;color:var(--fg-l2);flex-shrink:0;text-align:right}
+
+/* Numbers */
+.numbers{padding:clamp(88px,12vw,160px) 0;border-top:1px solid var(--border-l)}
+.num-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:1px;background:var(--border-l);margin-top:clamp(40px,5vw,72px)}
+.nc{background:var(--light);padding:clamp(36px,5vw,60px) clamp(24px,3vw,40px);text-align:center;position:relative;overflow:hidden;transition:color .35s}
+.nc::before{content:'';position:absolute;inset:0;background:var(--blue);transform:scaleY(0);transform-origin:bottom;transition:transform .42s var(--ease-io);z-index:0}
+.nc:hover::before{transform:scaleY(1)}
+.nc>*{position:relative;z-index:1;transition:color .32s}
+.nc:hover .nc-val,.nc:hover .nc-lbl,.nc:hover .nc-desc{color:#fff}
+.nc-val{font-family:var(--f-head);font-size:clamp(44px,7vw,80px);font-weight:400;letter-spacing:.02em;color:var(--blue);line-height:1;margin-bottom:6px}
+.nc-lbl{font-family:var(--f-body);font-size:13px;font-weight:700;color:var(--fg-l);margin-bottom:8px}
+.nc-desc{font-family:var(--f-body);font-size:12px;color:var(--fg-l2);line-height:1.55}
+
+/* Process */
+.process{padding:clamp(100px,14vw,180px) 0}
+.proc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:1px;background:var(--border-d)}
+.pc{background:var(--dark);padding:clamp(28px,4vw,48px) clamp(20px,3vw,36px);position:relative;overflow:hidden}
+.pc-fill{position:absolute;inset:0;background:var(--blue);transform:translateY(101%);transition:transform .45s var(--ease-io);z-index:0}
+.pc:hover .pc-fill{transform:translateY(0)}
+.pc>*:not(.pc-fill){position:relative;z-index:1;transition:color .3s}
+.pc:hover .pc-nn,.pc:hover .pc-t,.pc:hover .pc-b,.pc:hover .pc-time{color:#fff}
+.pc:hover .pc-time{border-color:#fff}
+.pc-nn{font-family:var(--f-head);font-size:clamp(44px,6vw,64px);font-weight:400;color:rgba(232,230,224,.04);line-height:1;margin-bottom:clamp(16px,2.5vw,24px)}
+.pc-t{font-family:var(--f-head);font-size:clamp(16px,1.8vw,22px);font-weight:400;margin-bottom:10px;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-d)}
+.pc-b{font-family:var(--f-body);font-size:13px;line-height:1.8;color:var(--fg-d2)}
+.pc-time{display:inline-block;font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);border:1px solid var(--blue);padding:4px 12px;margin-top:16px;transition:color .3s,border-color .3s}
+
+/* Philosophy */
+.testi{padding:clamp(100px,14vw,180px) 0;border-top:1px solid var(--border-d)}
+.testi-inner{display:flex;gap:clamp(48px,8vw,120px);align-items:center}
+.testi-left{flex:0 0 38%;min-width:0}
+.testi-right{flex:1 1 0;min-width:0}
+.testi-q{font-family:var(--f-head);font-size:clamp(28px,4vw,56px);font-weight:400;line-height:1.05;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-d)}
+.testi-panel{border:1px solid var(--border-d);padding:clamp(40px,5vw,64px);position:relative;transition:border-color .35s}
+.testi-panel:hover{border-color:rgba(0,71,255,.3)}
+.testi-panel::before{content:'"';font-family:var(--f-head);font-size:clamp(80px,12vw,140px);color:rgba(232,230,224,.03);line-height:1;position:absolute;top:clamp(8px,1.5vw,16px);left:clamp(14px,2vw,24px);pointer-events:none}
+.testi-panel .t-body{max-width:none;line-height:1.95;font-size:clamp(15px,1.2vw,18px);letter-spacing:.01em}
+
+/* Fun strip */
+.fun{padding:clamp(48px,7vw,96px) 0;border-top:1px solid var(--border-d);border-bottom:1px solid var(--border-d);overflow:hidden;background:var(--dark2)}
+.fun-txt{font-family:var(--f-head);font-size:clamp(48px,11vw,140px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;display:flex;gap:clamp(24px,4vw,64px);align-items:center;white-space:nowrap;animation:mqF 14s linear infinite}
+.fun-txt .h{color:var(--fg-d)}.fun-txt .l{-webkit-text-stroke:1px rgba(232,230,224,.12);color:transparent}.fun-txt .dot{color:var(--blue);font-size:.45em}
+
+/* CTA */
+.cta-s{padding:clamp(100px,15vw,200px) 0;text-align:center;position:relative;overflow:hidden}
+.cta-s::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(0,71,255,.04) 0%,transparent 70%);pointer-events:none}
+.cta-s h2{font-family:var(--f-head);font-size:clamp(48px,9vw,128px);font-weight:400;letter-spacing:.02em;line-height:.9;text-transform:uppercase;color:var(--fg-l);position:relative}
+.cta-s h2 .a{color:var(--blue)}
+.cta-s p{font-family:var(--f-body);font-size:clamp(13px,.95vw,15px);color:var(--fg-l2);max-width:40ch;margin:clamp(20px,3vw,28px) auto;line-height:1.85;position:relative}
+
+/* Footer */
+.footer{background:var(--dark2);border-top:1px solid var(--border-d);padding:clamp(28px,4vw,44px) var(--pad)}
+.footer-in{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:clamp(12px,2vw,16px)}
+.f-logo{font-family:var(--f-head);font-size:18px;font-weight:400;letter-spacing:.06em;color:var(--fg-d);text-transform:uppercase}
+.f-links{display:flex;gap:clamp(14px,2.5vw,28px);flex-wrap:wrap}
+.f-lnk{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#444;transition:color .2s}
+.f-lnk:hover{color:var(--blue)}
+.f-copy{font-family:var(--f-body);font-size:11px;color:#333}
+
+/* ════════════════════════════════════════════════════
+   WORKS PAGE — editorial grid layout
+════════════════════════════════════════════════════ */
+.wp-hero{padding:clamp(128px,16vw,200px) 0 clamp(0px,2vw,24px)}
+
+/* Works grid — 2 columns on desktop, 1 on mobile */
+.wg{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:2px;background:var(--border-d);
+}
+@media(max-width:640px){.wg{grid-template-columns:1fr}}
+
+.wc{background:var(--dark2);overflow:hidden;cursor:pointer;position:relative;transition:background .3s}
+.wc:hover{background:var(--dark3)}
+.wc-img{width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--dark3)}
+.wc-img img{width:100%;height:100%;object-fit:cover;transition:transform .55s var(--ease-out)}
+.wc:hover .wc-img img{transform:scale(1.05)}
+.wc-body{padding:clamp(20px,2.5vw,32px)}
+
+/* Work card — horizontal meta row */
+.wc-meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(10px,1.5vw,16px)}
+.wc-n{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--fg-d2);text-transform:uppercase}
+.wc-year{font-family:var(--f-body);font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--fg-d2)}
+.wc-title{font-family:var(--f-head);font-size:clamp(20px,2.2vw,30px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;margin-bottom:6px;transition:color .25s;color:var(--fg-d);line-height:.95}
+.wc:hover .wc-title{color:var(--blue)}
+.wc-cat{font-family:var(--f-body);font-size:11px;color:var(--fg-d2);margin-bottom:clamp(12px,1.8vw,18px)}
+.wc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.wc-tag{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--border-d);padding:3px 10px;color:var(--fg-d2);transition:border-color .25s,color .25s}
+.wc:hover .wc-tag{border-color:var(--blue);color:var(--blue)}
+.wc-arr{position:absolute;top:18px;right:18px;width:36px;height:36px;background:var(--blue);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.6) rotate(-45deg);transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1);color:#fff;font-size:15px}
+.wc:hover .wc-arr{opacity:1;transform:scale(1) rotate(0)}
+
+/* Work Detail */
+.wd-h{background:var(--dark);padding:clamp(128px,16vw,200px) 0 clamp(56px,8vw,88px);border-bottom:1px solid var(--border-d)}
+.wd-meta{display:flex;gap:clamp(24px,3.5vw,56px);flex-wrap:wrap;padding:clamp(24px,3.5vw,40px) 0;border-bottom:1px solid var(--border-d);margin-bottom:clamp(48px,7vw,88px)}
+.wd-mi label{font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-d2);display:block;margin-bottom:6px}
+.wd-mi span{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--fg-d)}
+.wd-img{width:100%;aspect-ratio:16/9;background:var(--dark2);overflow:hidden}
+.wd-img img{width:100%;height:100%;object-fit:cover}
+.work-back{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-d2);margin-bottom:clamp(24px,3.5vw,40px);transition:color .2s}
+.work-back:hover{color:var(--blue)}
+.work-back svg{transition:transform .2s var(--ease-out)}
+.work-back:hover svg{transform:translateX(-3px)}
+
+/* ════════════════════════════════════════════════════
+   ABOUT PAGE — full editorial redesign
+════════════════════════════════════════════════════ */
+
+/* Hero: big name + left/right split */
+.ab-hero{padding:clamp(128px,16vw,200px) 0 clamp(80px,10vw,128px)}
+
+/* Big display name — spans full width like a headline */
+.ab-name{
+  font-family:var(--f-head);
+  font-size:clamp(80px,16vw,240px);
+  font-weight:400;letter-spacing:.01em;text-transform:uppercase;
+  line-height:.82;
+  color:var(--fg-d);
+  margin-bottom:clamp(48px,7vw,96px);
+  /* Slight right offset for drama */
+  padding-left:clamp(0px,4vw,64px);
+}
+.ab-name span{color:var(--blue)}
+
+/* Bio columns */
+.ab-bio{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,88px);align-items:start}
+.ab-bio-left{}
+.ab-role-tag{display:inline-block;font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);border:1px solid rgba(0,71,255,.3);padding:5px 14px;margin-bottom:clamp(20px,3vw,32px)}
+.ab-lead{font-family:var(--f-body);font-size:clamp(16px,1.5vw,20px);font-weight:500;line-height:1.65;color:var(--fg-d);margin-bottom:clamp(16px,2.5vw,28px);max-width:44ch}
+.ab-sub{font-family:var(--f-body);font-size:clamp(13px,.95vw,15px);line-height:1.85;color:var(--fg-d2);margin-bottom:clamp(28px,4vw,44px);max-width:44ch}
+
+/* Right side: photo + info card */
+.ab-photo-wrap{position:relative;margin-bottom:clamp(16px,2.5vw,24px)}
+.ab-img{width:100%;aspect-ratio:3/4;background:var(--dark2);overflow:hidden;position:relative;max-width:480px}
+.ab-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease-out)}
+.ab-img:hover img{transform:scale(1.03)}
+.ab-img-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(10,10,10,.75));padding:clamp(14px,2.5vw,24px);font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,230,224,.3)}
+
+/* Info grid below photo */
+.ab-info{border:1px solid var(--border-d);max-width:480px}
+.ai-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border-d)}
+.ai-row:last-child{border-bottom:none}
+.ai-c{padding:clamp(12px,1.8vw,18px) clamp(14px,2vw,22px)}
+.ai-c:not(:last-child){border-right:1px solid var(--border-d)}
+.ai-label{font-family:var(--f-body);font-size:9px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-d2);margin-bottom:5px}
+.ai-val{font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--fg-d)}
+.ai-val a{color:var(--fg-d);transition:color .2s}
+.ai-val a:hover{color:var(--blue)}
+
+/* Skills section — light bg */
+.ab-skills{padding:clamp(88px,12vw,160px) 0}
+.sk-2col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,88px);align-items:start}
+.sk-heading{font-family:var(--f-head);font-size:clamp(32px,4.5vw,64px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-l);margin-bottom:clamp(32px,5vw,64px);line-height:.92}
+
+/* Skill tags */
+.sk-group{margin-bottom:clamp(24px,3.5vw,36px)}
+.sk-cat-label{font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+.sk-tags{display:flex;flex-wrap:wrap;gap:8px}
+.sk-tag{
+  font-family:var(--f-body);font-size:12px;font-weight:600;
+  color:var(--fg-l);border:1px solid var(--border-l);
+  padding:6px 14px;letter-spacing:.02em;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .4s var(--ease-out),transform .4s var(--ease-out),background .22s,color .22s,border-color .22s;
+}
+.sk-tag.in{opacity:1;transform:none}
+.sk-tag:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* Behance CTA strip */
+.ab-behance{
+  border-top:1px solid var(--border-l);
+  padding:clamp(48px,7vw,96px) 0;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:24px;
+}
+.ab-behance-left{}
+.ab-behance-label{font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.ab-behance-title{font-family:var(--f-head);font-size:clamp(22px,3vw,40px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-l);line-height:.95}
+.ab-behance-sub{font-family:var(--f-body);font-size:13px;color:var(--fg-l2);margin-top:10px;max-width:44ch;line-height:1.7}
+
+/* Experience */
+.exp-heading{font-family:var(--f-head);font-size:clamp(32px,4.5vw,64px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;color:var(--fg-l);margin-bottom:clamp(32px,5vw,64px);line-height:.92}
+.exp{border-top:1px solid var(--border-l);padding:clamp(24px,3.5vw,40px) 0;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.exp-t{font-family:var(--f-head);font-size:clamp(18px,2.2vw,28px);font-weight:400;color:var(--fg-l);margin-bottom:5px;letter-spacing:.02em;text-transform:uppercase}
+.exp-c{font-family:var(--f-body);font-size:11px;font-weight:700;color:var(--blue);margin-bottom:12px;letter-spacing:.08em;text-transform:uppercase}
+.exp-desc{font-family:var(--f-body);font-size:clamp(12px,.9vw,14px);line-height:1.8;color:var(--fg-l2);max-width:46ch}
+.exp-badge{font-family:var(--f-body);font-size:9px;font-weight:700;color:var(--fg-l2);letter-spacing:.1em;white-space:nowrap;border:1px solid var(--border-l);padding:6px 12px;height:fit-content;flex-shrink:0}
+
+/* ════════════════════════════════════════════════════
+   CONTACT PAGE — clean editorial layout
+════════════════════════════════════════════════════ */
+.ct-hero{padding:clamp(128px,16vw,200px) 0 clamp(72px,10vw,120px)}
+
+/* Big headline + tagline split */
+.ct-top{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,88px);align-items:end;margin-bottom:clamp(72px,10vw,120px)}
+.ct-tagline{font-family:var(--f-body);font-size:clamp(14px,1.2vw,17px);line-height:1.8;color:var(--fg-d2);max-width:42ch;align-self:end;padding-bottom:8px}
+
+/* Contact methods — full width row of 4 cards */
+.ct-methods{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border-d);
+  margin-bottom:clamp(72px,10vw,120px);
+}
+.ct-card{
+  background:var(--dark2);padding:clamp(24px,3.5vw,40px) clamp(20px,3vw,32px);
+  position:relative;overflow:hidden;transition:background .3s;cursor:pointer;
+}
+.ct-card::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--blue);transition:width .35s var(--ease-out)}
+.ct-card:hover::after{width:100%}
+.ct-card:hover{background:var(--dark3)}
+.ct-card-label{font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-d2);margin-bottom:clamp(12px,2vw,20px)}
+.ct-card-val{font-family:var(--f-body);font-size:clamp(12px,1vw,14px);font-weight:600;color:var(--fg-d);word-break:break-all;line-height:1.5;transition:color .25s}
+.ct-card:hover .ct-card-val{color:var(--blue)}
+.ct-card-arr{position:absolute;top:clamp(16px,2.5vw,24px);right:clamp(16px,2.5vw,24px);font-size:16px;color:var(--fg-d2);transition:color .25s,transform .25s var(--ease-out)}
+.ct-card:hover .ct-card-arr{color:var(--blue);transform:translate(2px,-2px)}
+
+/* Availability banner */
+.ct-avail{
+  border:1px solid rgba(0,71,255,.2);background:rgba(0,71,255,.04);
+  padding:clamp(20px,3vw,32px) clamp(24px,3.5vw,40px);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+  margin-bottom:clamp(72px,10vw,120px);
+}
+.ct-avail-left{display:flex;align-items:center;gap:12px}
+.ct-avail-dot{width:8px;height:8px;background:var(--blue);border-radius:50%;flex-shrink:0;animation:pulse 2.2s ease-in-out infinite}
+.ct-avail-txt{font-family:var(--f-body);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+.ct-avail-note{font-family:var(--f-body);font-size:13px;color:rgba(232,230,224,.4);line-height:1.6}
+
+/* Form section */
+.ct-form-section{padding:clamp(88px,12vw,160px) 0}
+.ct-form-inner{
+  display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(48px,8vw,120px);align-items:start;
+}
+.ct-form-left{}
+.ct-form-intro{font-family:var(--f-body);font-size:clamp(13px,.95vw,15px);line-height:1.85;color:var(--fg-l2);max-width:40ch;margin-bottom:clamp(28px,4vw,48px)}
+.ct-mini-links{display:flex;flex-direction:column;gap:0}
+.ct-ml{display:flex;align-items:center;justify-content:space-between;padding:clamp(12px,1.8vw,18px) 0;border-top:1px solid var(--border-l);font-family:var(--f-body);font-size:12px;font-weight:600;color:var(--fg-l);transition:color .2s;gap:12px}
+.ct-ml:hover{color:var(--blue)}
+.ct-ml-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-l2);display:block;margin-bottom:2px;transition:color .2s}
+.ct-ml:hover .ct-ml-lbl{color:rgba(0,71,255,.5)}
+.ct-ml-arr{flex-shrink:0;font-size:16px;color:var(--fg-l2);transition:color .2s,transform .2s}
+.ct-ml:hover .ct-ml-arr{color:var(--blue);transform:translate(2px,-2px)}
+
+.fm-row{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,16px)}
+.fg{margin-bottom:clamp(14px,2vw,22px)}
+.fl{font-family:var(--f-body);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-l2);display:block;margin-bottom:8px}
+.fi,.fta,.fsl{width:100%;background:var(--light2);border:1px solid var(--border-l);padding:14px 18px;font-family:var(--f-body);font-size:14px;color:var(--fg-l);outline:none;transition:border-color .22s,background .22s;appearance:none;border-radius:0}
+.fi:focus,.fta:focus,.fsl:focus{border-color:var(--blue);background:#fff}
+.fta{resize:none;height:120px}
+.fsl{background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%23888' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;color:#555;background-color:var(--light2)}
+
+/* ════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════ */
+@media(max-width:1024px){
+  .col-5,.col-6,.col-7,.col-8{grid-column:span 12}
+  .col-4{grid-column:span 6}
+  .col-start-7,.col-start-8{grid-column-start:auto}
+  .ct-methods{grid-template-columns:1fr 1fr}
+  .ab-bio{grid-template-columns:1fr}
+  .ab-name{font-size:clamp(72px,14vw,180px)}
+}
+@media(max-width:768px){
+  .n-links,.n-cta{display:none}.ham{display:flex}
+  .col-4,.col-5,.col-6,.col-7,.col-8{grid-column:span 12}
+  .col-start-2,.col-start-3,.col-start-4,.col-start-7,.col-start-8{grid-column-start:auto}
+  .h-bot{flex-direction:column;align-items:flex-start;gap:28px}
+  .h-right{align-items:flex-start}.h-badge{display:none}.h-stats{flex-wrap:wrap;gap:24px}
+  .t-disp{font-size:clamp(48px,14vw,100px)}.h-head{font-size:clamp(48px,13vw,100px)}
+  .t-h1{font-size:clamp(36px,10vw,72px)}.t-h2{font-size:clamp(24px,7vw,48px)}
+  .ab-name{font-size:clamp(60px,16vw,120px)}
+  .sk-2col{grid-template-columns:1fr}
+  .ct-top{grid-template-columns:1fr}
+  .ct-methods{grid-template-columns:1fr 1fr}
+  .ct-form-inner{grid-template-columns:1fr}
+  /* Philosophy stack on mobile */
+  .testi-inner{flex-direction:column;gap:clamp(36px,6vw,56px)}
+  .testi-left,.testi-right{flex:none;width:100%}
+  /* Contact form top fix */
+  .ct-methods{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  :root{--pad:18px}
+  .svc{grid-template-columns:40px 1fr auto}
+  .wi{grid-template-columns:36px 1fr auto}.wi-tags{display:none}
+  .proc-grid{grid-template-columns:1fr}.num-grid{grid-template-columns:1fr 1fr}
+  .fm-row{grid-template-columns:1fr}
+  .ct-methods{grid-template-columns:1fr}
+  .ab-name{font-size:clamp(52px,18vw,100px)}
+  /* Touch tap feedback — blue left border flash */
+  .wi:active{border-left:2px solid var(--blue)}
+  .svc:active{border-left:2px solid var(--blue)}
+  /* Work cards on mobile — always show title in white */
+  .wc-title{color:var(--fg-d)}
+  /* testi-panel on small mobile */
+  .testi-panel{padding:clamp(28px,6vw,40px) clamp(20px,5vw,32px)}
+  /* Work detail links — stack vertically */
+  #wd-links{display:flex;flex-direction:column;gap:12px}
+  #wd-links .btn{width:100%;justify-content:center}
+}
+@media(max-width:400px){.num-grid{grid-template-columns:1fr}.h-stats{gap:16px}}
+@media(hover:none){
+  /* Remove hover fills/overlays on touch */
+  .svc-fill,.wi-fill,.pc-fill{display:none!important}
+  .nc::before{display:none!important}
+  /* Show text colors directly — no hover needed */
+  .svc-name,.svc-n{color:var(--fg-d)!important}
+  .wi-title{color:var(--fg-l)!important}
+  .wi-n,.wi-cat,.wi-arr{color:var(--fg-l2)!important}
+  .nc-val{color:var(--blue)!important}
+  .nc-lbl{color:var(--fg-l)!important}
+  .nc-desc{color:var(--fg-l2)!important}
+  /* ct-card: show underline always */
+  .ct-card::after{width:100%!important}
+  .ct-card-val{color:var(--fg-d)!important}
+  /* wc hover title */
+  .wc-title{color:var(--fg-d)!important}
+  /* testi-panel border */
+  .testi-panel{border-color:rgba(0,71,255,.2)!important}
+  /* btn hover stays off */
+  .btn-p::before{display:none}
+  /* n-link underline */
+  .n-link.on::after{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  .blur-reveal{filter:none;opacity:0}.blur-reveal.in{opacity:1}
+}
+
+</style>
+</head>
+<body>
+
+<div id="cur" aria-hidden="true"></div>
+<div id="cur-ring" aria-hidden="true"></div>
+<div id="cur-glow" aria-hidden="true"></div>
+<div id="prog" role="progressbar" aria-hidden="true"></div>
+
+<button id="stt" aria-label="Scroll to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<!-- NAV -->
+<nav id="nav" role="navigation" aria-label="Main">
+  <a href="#home" class="n-logo" data-page="home" aria-label="Damon.13 Home">
+    <span class="n-logo-box">D13</span>DAMON.13
+  </a>
+  <div class="n-links" role="menubar">
+    <a class="n-link on" data-page="home"    href="#home"    role="menuitem">Home</a>
+    <a class="n-link"    data-page="works"   href="#works"   role="menuitem">Works</a>
+    <a class="n-link"    data-page="about"   href="#about"   role="menuitem">About</a>
+    <a class="n-link"    data-page="contact" href="#contact" role="menuitem">Contact</a>
+  </div>
+  <a href="#contact" class="n-cta" data-page="contact">Book a Call</a>
+  <button class="ham" id="ham" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div id="m-nav" role="dialog" aria-label="Mobile menu" aria-modal="true">
+  <a class="m-link" data-page="home"    href="#home">Home</a>
+  <a class="m-link" data-page="works"   href="#works">Works</a>
+  <a class="m-link" data-page="about"   href="#about">About</a>
+  <a class="m-link" data-page="contact" href="#contact">Contact</a>
+  <a class="btn btn-p" data-page="contact" href="#contact" style="margin-top:12px">Book a Call</a>
+</div>
+
+
+<!-- ══════════════════ HOME ══════════════════ -->
+<div id="page-home" class="page on">
+
+  <section class="hero s-dark" aria-labelledby="hero-h1">
+    <div class="h-grid" aria-hidden="true"></div>
+    <div aria-hidden="true"><div class="h-orb h-orb-a"></div><div class="h-orb h-orb-b"></div></div>
+    <div class="h-pts" id="hp" aria-hidden="true"></div>
+    <div class="h-badge" aria-hidden="true">
+      <svg viewBox="0 0 120 120" width="100%" height="100%">
+        <path id="cp" d="M60,10 a50,50 0 1,1 -0.001,0" fill="none"/>
+        <text><textPath href="#cp" startOffset="0%">
+          <tspan font-family="DM Sans,sans-serif" font-size="10" font-weight="600" letter-spacing="2.5" fill="#333">AVAILABLE · DAMON.13 · HCMC · </tspan>
+        </textPath></text>
+      </svg>
+      <div class="h-badge-dot"></div>
+    </div>
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="h-pill"><span class="h-pill-dot" aria-hidden="true"></span>Available for Creative Leadership</div>
+      <h1 class="h-head" id="hero-h1">
+        <span class="h-line"><span class="h-word blur-reveal" style="animation-delay:.2s">Design&thinsp;</span><span class="h-word blur-reveal d1" style="animation-delay:.34s">that</span></span>
+        <span class="h-line"><span class="h-word blur-reveal d2" style="-webkit-text-stroke:1.5px rgba(232,230,224,.22);color:transparent;animation-delay:.5s">solves&thinsp;</span><span class="h-word blur-reveal d3" style="animation-delay:.62s">real</span></span>
+        <span class="h-line"><span class="h-word blur-reveal d4" style="color:var(--blue);animation-delay:.76s">problems.</span></span>
+      </h1>
+      <div class="h-bot">
+        <div class="h-desc">
+          <p class="t-body" style="color:rgba(232,230,224,.55);max-width:380px;line-height:1.8">Creative Leader · Media Lead &amp; Brand Designer — Brand Identity, Digital Product, POSM &amp; Social Media. Ho Chi Minh City.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:clamp(22px,3.5vw,32px)">
+            <a href="#works"   data-page="works"   class="btn btn-p">See works <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+            <a href="#contact" data-page="contact" class="btn btn-od">Book a call</a>
+          </div>
+        </div>
+        <div class="h-right">
+          <div class="h-scroll"><div class="h-scroll-line"></div>Scroll</div>
+          <div class="h-stats">
+            <div><div class="stat-n">35</div><div class="stat-l">Likes</div></div>
+            <div><div class="stat-n">1.1k</div><div class="stat-l">Views</div></div>
+            <div><div class="stat-n">5+</div><div class="stat-l">Years Exp.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="h-sep s-dark"></div>
+
+  <div class="mq-wrap mq-dark-border s-dark" aria-hidden="true">
+    <div class="mq-track">
+      <span class="mq-item"><span class="dot">★</span>BRAND IDENTITY</span><span class="mq-item"><span class="dot">★</span>DIGITAL PRODUCT</span><span class="mq-item"><span class="dot">★</span>POSM DESIGN</span><span class="mq-item"><span class="dot">★</span>SOCIAL MEDIA</span><span class="mq-item"><span class="dot">★</span>FRAMER WEBSITE</span><span class="mq-item"><span class="dot">★</span>PACKAGING</span><span class="mq-item"><span class="dot">★</span>MEDIA LEAD</span><span class="mq-item"><span class="dot">★</span>BRAND IDENTITY</span><span class="mq-item"><span class="dot">★</span>DIGITAL PRODUCT</span><span class="mq-item"><span class="dot">★</span>POSM DESIGN</span><span class="mq-item"><span class="dot">★</span>SOCIAL MEDIA</span><span class="mq-item"><span class="dot">★</span>FRAMER WEBSITE</span><span class="mq-item"><span class="dot">★</span>PACKAGING</span><span class="mq-item"><span class="dot">★</span>MEDIA LEAD</span>
+    </div>
+  </div>
+
+  <!-- INTRO — light -->
+  <section class="intro s-light from-dark">
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="g12" style="align-items:start">
+        <div class="col-5 rev">
+          <div class="intro-kicker"></div>
+          <div class="t-over" style="margin-bottom:clamp(16px,2.5vw,28px)">( About me )</div>
+          <h2 class="t-h1" style="color:var(--fg-l);line-height:.92">Strategic design<br/>meets <span style="color:var(--blue)">visual impact.</span></h2>
+          <blockquote class="intro-quote rev d2">"Good design isn't just beautiful — it solves real problems."</blockquote>
+        </div>
+        <div class="col-6 col-start-7" style="padding-top:clamp(0px,6vw,88px)">
+          <p class="t-body rev d1" style="color:var(--fg-l);margin-bottom:clamp(16px,2.5vw,24px)">I'm <strong style="font-weight:700">Thong Ngo (Damon.13)</strong> — Creative Leader & Media Lead at <strong style="font-weight:700">Milano Coffee Vietnam</strong>, and Freelance Brand Designer.</p>
+          <p class="t-body rev d2" style="color:var(--fg-l2);margin-bottom:clamp(24px,4vw,40px)">5+ years leading creative direction across Brand Identity, Digital Product, POSM and Social Media — building teams, systems, and visual identities that perform.</p>
+          <div class="rev d3" style="display:flex;gap:12px;flex-wrap:wrap">
+            <a href="#about" data-page="about" class="btn btn-dark">About me <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+            <a href="#works" data-page="works"  class="btn btn-p">See works <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES — dark -->
+  <section class="services s-dark from-light">
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="sec-label rev"><span class="t-over">( Capabilities )</span></div>
+      <div role="list">
+        <div class="svc rev"    role="listitem"><div class="svc-fill"></div><div class="svc-n">01</div><div><div class="svc-name">Brand Identity</div><div class="svc-sub">Logo · Typography · Color System · Guidelines</div></div><div class="svc-arr">↗</div></div>
+        <div class="svc rev d1" role="listitem"><div class="svc-fill"></div><div class="svc-n">02</div><div><div class="svc-name">Digital Product Design</div><div class="svc-sub">UX Research · Wireframe · High-Fidelity · Prototype</div></div><div class="svc-arr">↗</div></div>
+        <div class="svc rev d2" role="listitem"><div class="svc-fill"></div><div class="svc-n">03</div><div><div class="svc-name">POSM &amp; Merchandise</div><div class="svc-sub">Banner · Packaging · Print Materials · Seasonal</div></div><div class="svc-arr">↗</div></div>
+        <div class="svc rev d3" role="listitem"><div class="svc-fill"></div><div class="svc-n">04</div><div><div class="svc-name">Social Media Design</div><div class="svc-sub">Content Strategy · Visual System · Multi-platform</div></div><div class="svc-arr">↗</div></div>
+        <div class="svc rev d4" role="listitem"><div class="svc-fill"></div><div class="svc-n">05</div><div><div class="svc-name">Framer Website</div><div class="svc-sub">No-code · Animation · Responsive · CMS</div></div><div class="svc-arr">↗</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELECTED WORK — light -->
+  <section class="works-w s-light from-dark">
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="sec-label rev" style="color:var(--fg-l)"><span class="t-over">( Selected Work )</span></div>
+      <div class="g12" style="margin-bottom:clamp(32px,5vw,64px);align-items:end">
+        <h2 class="col-7 t-h1 blur-reveal" style="color:var(--fg-l)">Work that<br/><span style="color:var(--blue)">speaks.</span></h2>
+        <div class="col-5 col-start-8" style="display:flex;align-items:flex-end;padding-bottom:4px">
+          <a href="#works" data-page="works" class="btn btn-dark rev" style="margin-left:auto">All works ↗</a>
+        </div>
+      </div>
+      <div id="home-work-list" role="list"></div>
+    </div>
+  </section>
+
+  <div class="mq-wrap mq-light-border s-light" style="background:var(--light)" aria-hidden="true">
+    <div class="mq-track-r">
+      <span class="mq-item" style="color:#bbb"><span class="dot">●</span>DAMON.13</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>MILANO COFFEE</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>CRAFTED NOT GENERATED</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>HO CHI MINH CITY</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>AVAILABLE 2026</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>BOLD OR NOTHING</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>DAMON.13</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>MILANO COFFEE</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>CRAFTED NOT GENERATED</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>HO CHI MINH CITY</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>AVAILABLE 2026</span><span class="mq-item" style="color:#bbb"><span class="dot">●</span>BOLD OR NOTHING</span>
+    </div>
+  </div>
+
+  <!-- NUMBERS — light -->
+  <section class="numbers s-light" style="background:var(--light)">
+    <div class="wrap">
+      <div class="sec-label rev" style="color:var(--fg-l)"><span class="t-over">( By the numbers )</span></div>
+      <h2 class="t-h2 blur-reveal" style="color:var(--fg-l)">Results that <span style="color:var(--blue)">matter.</span></h2>
+      <div class="num-grid rev d2">
+        <div class="nc"><div class="nc-val">35</div><div class="nc-lbl">Appreciations</div><div class="nc-desc">From the design community</div></div>
+        <div class="nc"><div class="nc-val">1.1k</div><div class="nc-lbl">Project Views</div><div class="nc-desc">Across all platforms</div></div>
+        <div class="nc"><div class="nc-val">12+</div><div class="nc-lbl">Projects Done</div><div class="nc-desc">Delivered end-to-end</div></div>
+        <div class="nc"><div class="nc-val">5+</div><div class="nc-lbl">Years Exp.</div><div class="nc-desc">In brand & digital design</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS — dark -->
+  <section class="process s-dark from-light">
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="sec-label rev"><span class="t-over">( Process )</span></div>
+      <div class="g12" style="margin-bottom:clamp(40px,6vw,72px);align-items:end">
+        <h2 class="col-7 t-h1 blur-reveal">From <span style="color:var(--blue)">"not sure"</span><br/>to "I love it."</h2>
+        <p class="col-4 col-start-9 t-body rev d2" style="padding-bottom:4px;color:var(--fg-d2)">"Every step is designed to be clear and efficient — from the first call to handoff."</p>
+      </div>
+      <div class="proc-grid">
+        <div class="pc rev"   ><div class="pc-fill"></div><div class="pc-nn">01</div><div class="pc-t">Book a Call</div><p class="t-body pc-b" style="max-width:none">30 minutes to align vision and confirm fit.</p><div class="pc-time">30 min</div></div>
+        <div class="pc rev d1"><div class="pc-fill"></div><div class="pc-nn">02</div><div class="pc-t">Project Brief</div><p class="t-body pc-b" style="max-width:none">Define scope, timeline and deliverables together.</p><div class="pc-time">1 week</div></div>
+        <div class="pc rev d2"><div class="pc-fill"></div><div class="pc-nn">03</div><div class="pc-t">Design &amp; Build</div><p class="t-body pc-b" style="max-width:none">Design, refine and iterate until it's perfect.</p><div class="pc-time">3–4 weeks</div></div>
+        <div class="pc rev d3"><div class="pc-fill"></div><div class="pc-nn">04</div><div class="pc-t">Deliver</div><p class="t-body pc-b" style="max-width:none">Handoff files, guidelines and full support.</p><div class="pc-time">1–2 weeks</div></div>
+        <div class="pc rev d4" style="background:rgba(0,71,255,.04);border:1px solid rgba(0,71,255,.12)">
+          <div class="pc-fill"></div>
+          <div class="pc-nn" style="color:rgba(0,71,255,.08)">05</div>
+          <div class="pc-t" style="color:var(--blue)">30-Day Support</div>
+          <p class="t-body pc-b" style="max-width:none">Free. Minor revisions after delivery.</p>
+          <div class="pc-time" style="color:var(--fg-d2);border-color:var(--fg-d2)">Free</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <section class="testi s-dark">
+    <div class="wrap">
+      <div class="sec-label rev"><span class="t-over">( Philosophy )</span></div>
+      <div class="testi-inner">
+        <div class="testi-left rev">
+          <blockquote class="testi-q rev d1">"Design with <span style="color:var(--blue)">intention</span>,<br/>deliver with <span style="color:var(--blue)">precision</span>."</blockquote>
+          <p class="t-body rev d2" style="margin-top:clamp(24px,3.5vw,40px);color:var(--fg-d2)">— Thong Ngo / Damon.13</p>
+        </div>
+        <div class="testi-right rev d2">
+          <div class="testi-panel">
+            <p class="t-body" style="max-width:none;margin-bottom:clamp(24px,3.5vw,36px);color:var(--fg-d)">Every pixel needs a reason to exist — and that reason must serve the end user, not just look good on a portfolio.</p>
+            <p class="t-body" style="max-width:none;color:var(--fg-d2)">From strategy to execution, the question is always: <span style="color:var(--blue);font-weight:600">"What problem does this solve?"</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="fun s-dark">
+    <div class="fun-txt">
+      <span class="h">CRAFTED,</span><span class="dot">●</span><span class="l">NOT GENERATED</span><span class="dot">●</span><span class="h">PIXELS</span><span class="dot">●</span><span class="l">WITH PURPOSE</span><span class="dot">●</span><span class="h">BOLD</span><span class="dot">●</span><span class="l">OR NOTHING</span><span class="dot">●</span><span class="h">CRAFTED,</span><span class="dot">●</span><span class="l">NOT GENERATED</span><span class="dot">●</span><span class="h">PIXELS</span><span class="dot">●</span><span class="l">WITH PURPOSE</span>
+    </div>
+  </div>
+
+  <!-- CTA — light -->
+  <section class="cta-s s-light from-dark">
+    <div class="wrap" style="position:relative;z-index:3">
+      <h2 class="blur-reveal" style="margin-bottom:0">Let's build something<br/><span class="a">great.</span></h2>
+      <p class="rev d1">Open to Creative Leader & Brand Director opportunities — let's talk.</p>
+      <div class="rev d2" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a href="#contact" data-page="contact" class="btn btn-p">Start a project <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="btn btn-dark">Behance ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div class="f-logo">DAMON.13</div>
+      <div class="f-links">
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="f-lnk">Behance</a>
+        <a href="https://www.linkedin.com/in/thong-ngo-154481264" target="_blank" rel="noopener" class="f-lnk">LinkedIn</a>
+        <a href="https://damon13design.framer.website" target="_blank" rel="noopener" class="f-lnk">Framer Portfolio</a>
+        <a href="mailto:ngothong777@gmail.com" class="f-lnk">Email</a>
+      </div>
+      <div class="f-copy">© 2025 Thong Ngo. All rights reserved.</div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ WORKS ══════════════════ -->
+<div id="page-works" class="page">
+  <section class="wp-hero s-dark">
+    <div class="wrap">
+      <div class="t-over rev" style="margin-bottom:20px;color:var(--gray)">( Selected Works )</div>
+      <h1 class="t-disp blur-reveal" style="margin-bottom:clamp(16px,2.5vw,32px)">Work<br/><span style="color:var(--blue)">speaks.</span></h1>
+      <p class="t-body rev d1" style="color:var(--fg-d2)">Branding, Digital Product, POSM & Social — every project is a solution.</p>
+    </div>
+  </section>
+  <div id="works-grid" class="wg s-dark" style="background:var(--dark)"></div>
+  <footer class="footer" style="margin-top:2px">
+    <div class="wrap footer-in">
+      <div class="f-logo">DAMON.13</div>
+      <div class="f-links">
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="f-lnk">Behance</a>
+        <a href="https://www.linkedin.com/in/thong-ngo-154481264" target="_blank" rel="noopener" class="f-lnk">LinkedIn</a>
+        <a href="mailto:ngothong777@gmail.com" class="f-lnk">Email</a>
+      </div>
+      <div class="f-copy">© 2025 Thong Ngo</div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ WORK DETAIL ══════════════════ -->
+<div id="page-work-detail" class="page">
+  <section class="wd-h s-dark">
+    <div class="wrap">
+      <button class="work-back" id="work-back-btn" aria-label="Back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>All Works
+      </button>
+      <div class="t-over" id="wd-cat" style="margin-bottom:14px;color:var(--gray)"></div>
+      <h1 class="t-disp" id="wd-title"></h1>
+    </div>
+  </section>
+  <div class="s-dark" style="background:var(--dark)">
+    <div class="wrap">
+      <div class="wd-meta" id="wd-meta"></div>
+      <div class="wd-img" id="wd-hero-img"></div>
+    </div>
+    <div style="padding:clamp(56px,8vw,100px) 0 clamp(80px,11vw,140px)">
+      <div class="wrap">
+        <div class="g12" style="gap:clamp(28px,5vw,64px)">
+          <div class="col-6">
+            <h2 class="t-h2" style="margin-bottom:clamp(16px,2.5vw,28px)" id="wd-sub"></h2>
+            <div id="wd-desc" class="t-body" style="color:var(--fg-d2);max-width:48ch"></div>
+          </div>
+          <div class="col-5 col-start-8">
+            <div id="wd-pal" style="display:flex;gap:4px;margin-bottom:clamp(20px,3vw,32px)"></div>
+            <div id="wd-gal"></div>
+            <div id="wd-links" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:clamp(28px,4vw,44px)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div class="f-logo">DAMON.13</div>
+      <div class="f-links">
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="f-lnk">Behance</a>
+        <a href="mailto:ngothong777@gmail.com" class="f-lnk">Email</a>
+      </div>
+      <div class="f-copy">© 2025 Thong Ngo</div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ ABOUT ══════════════════ -->
+<div id="page-about" class="page">
+
+  <!-- Hero — dark, big name -->
+  <section class="ab-hero s-dark">
+    <div class="wrap">
+      <h1 class="ab-name blur-reveal">Thong<br/><span>Ngo.</span></h1>
+      <div class="ab-bio">
+        <div class="ab-bio-left rev">
+          <div class="ab-role-tag">Creative Leader · Media Lead · Brand Designer</div>
+          <p class="ab-lead">I lead creative teams and solve problems through strategic design.</p>
+          <p class="ab-sub" style="color:var(--fg-d2)">5+ years across Brand Identity, POSM, Digital Product, and Social Media — currently leading a 5-member media team at Milano Coffee Vietnam. I build systems, not just visuals.</p>
+          <p class="ab-sub" style="color:var(--fg-d2);margin-bottom:clamp(28px,4.5vw,48px)">Philosophy: <span style="color:var(--blue);font-weight:600">Design with intention, deliver with precision.</span></p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <a href="#contact" data-page="contact" class="btn btn-p">Work with me</a>
+            <a href="https://damon13design.framer.website" target="_blank" rel="noopener" class="btn btn-od">Framer Portfolio ↗</a>
+          </div>
+        </div>
+        <div class="rev d1">
+          <div class="ab-photo-wrap">
+            <div class="ab-img">
+              <img src="https://framerusercontent.com/images/FqxWcK7Cn7FE52FxtG26kHGz6I.jpeg" alt="Thong Ngo — Damon.13" onerror="this.parentElement.style.background='var(--dark2)';this.remove()"/>
+              <div class="ab-img-caption">Ho Chi Minh City, Vietnam</div>
+            </div>
+          </div>
+          <div class="ab-info rev d2">
+            <div class="ai-row">
+              <div class="ai-c"><div class="ai-label">Email</div><div class="ai-val"><a href="mailto:ngothong777@gmail.com">ngothong777@gmail.com</a></div></div>
+              <div class="ai-c"><div class="ai-label">Status</div><div class="ai-val" style="display:flex;align-items:center;gap:8px;color:var(--blue)"><span style="width:6px;height:6px;background:var(--blue);border-radius:50%;flex-shrink:0;animation:pulse 2.2s ease-in-out infinite"></span>Available</div></div>
+            </div>
+            <div class="ai-row">
+              <div class="ai-c"><div class="ai-label">Company</div><div class="ai-val">Milano Coffee VN</div></div>
+              <div class="ai-c"><div class="ai-label">Role</div><div class="ai-val">Creative Leader</div></div>
+            </div>
+            <div class="ai-row" style="border-bottom:none">
+              <div class="ai-c"><div class="ai-label">Phone</div><div class="ai-val"><a href="tel:+84367062214">+84 367 062 214</a></div></div>
+              <div class="ai-c"><div class="ai-label">Based in</div><div class="ai-val">HCMC, Vietnam</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills + Experience — light -->
+  <section class="ab-skills s-light">
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="sk-2col">
+        <div>
+          <h2 class="sk-heading rev">Skills &amp;<br/><span style="color:var(--blue)">Tools.</span></h2>
+          <div id="skills-list"></div>
+        </div>
+        <div>
+          <h2 class="exp-heading rev">Experience.</h2>
+          <div role="list">
+            <div class="exp rev" role="listitem">
+              <div>
+                <div class="exp-t">Media Leader</div>
+                <div class="exp-c">Milano Coffee Vietnam</div>
+                <p class="exp-desc">Led 5-member media team — 51 media categories, 26 e-commerce programs, 14 seasonal packaging collections. Designed Christmas 2025 & Lunar New Year 2026 cup generating 1B+ VND revenue.</p>
+              </div>
+              <div class="exp-badge">2025 — Now</div>
+            </div>
+            <div class="exp rev d1" role="listitem">
+              <div>
+                <div class="exp-t">Graphic Designer</div>
+                <div class="exp-c">Gong Cha Vietnam</div>
+                <p class="exp-desc">Created multimedia assets for nationwide marketing campaigns and ensured brand consistency across all platforms.</p>
+              </div>
+              <div class="exp-badge">2023 — 2025</div>
+            </div>
+            <div class="exp rev d2" role="listitem">
+              <div>
+                <div class="exp-t">Graphic Designer</div>
+                <div class="exp-c">Milano Coffee Vietnam</div>
+                <p class="exp-desc">Led visuals for seasonal launches and co-branding campaigns: Milano × LoL, TikTok, Grab. Produced corporate videos and managed POSM systems.</p>
+              </div>
+              <div class="exp-badge">2020 — 2025</div>
+            </div>
+            <div class="exp rev d3" role="listitem">
+              <div>
+                <div class="exp-t">Freelance Designer</div>
+                <div class="exp-c">Damon.13 — Independent</div>
+                <p class="exp-desc">Brand Identity, Digital Product, Framer Websites and Social Media. Understand the problem before touching the pen.</p>
+              </div>
+              <div class="exp-badge">2019 — Now</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portfolio CTA -->
+      <div class="ab-behance rev">
+        <div class="ab-behance-left">
+          <div class="ab-behance-label">( Portfolio )</div>
+          <div class="ab-behance-title">Full work on<br/><span style="color:var(--blue)">Framer & Behance.</span></div>
+          <p class="ab-behance-sub">Brand Identity, POSM, UI/UX and Social Media — from strategy to finished product. Case studies with full process.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0">
+          <a href="https://damon13design.framer.website" target="_blank" rel="noopener" class="btn btn-p">Framer ↗</a>
+          <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="btn btn-dark">Behance ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div class="f-logo">DAMON.13</div>
+      <div class="f-links">
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="f-lnk">Behance</a>
+        <a href="https://www.linkedin.com/in/thong-ngo-154481264" target="_blank" rel="noopener" class="f-lnk">LinkedIn</a>
+        <a href="https://damon13design.framer.website" target="_blank" rel="noopener" class="f-lnk">Framer Portfolio</a>
+        <a href="mailto:ngothong777@gmail.com" class="f-lnk">Email</a>
+      </div>
+      <div class="f-copy">© 2025 Thong Ngo</div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ CONTACT ══════════════════ -->
+<div id="page-contact" class="page">
+  <section class="ct-hero s-dark">
+    <div class="wrap">
+      <!-- Top: headline + tagline -->
+      <div class="ct-top">
+        <div>
+          <div class="t-over rev" style="margin-bottom:clamp(16px,2.5vw,28px);color:var(--gray)">( Get in touch )</div>
+          <h1 class="t-disp blur-reveal">Let's build<br/><span style="color:var(--blue)">something.</span></h1>
+        </div>
+        <p class="ct-tagline rev d1">2 slots remaining this month — reach out now to lock in your spot. Full-time · Freelance · Remote.</p>
+      </div>
+
+      <!-- Contact method cards — 4 across -->
+      <div class="ct-methods rev d1">
+        <a href="mailto:ngothong777@gmail.com" class="ct-card">
+          <div class="ct-card-label">Email</div>
+          <div class="ct-card-val">ngothong777<br/>@gmail.com</div>
+          <div class="ct-card-arr">↗</div>
+        </a>
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="ct-card">
+          <div class="ct-card-label">Behance</div>
+          <div class="ct-card-val">behance.net<br/>/thngng17</div>
+          <div class="ct-card-arr">↗</div>
+        </a>
+        <a href="https://www.linkedin.com/in/thong-ngo-154481264" target="_blank" rel="noopener" class="ct-card">
+          <div class="ct-card-label">LinkedIn</div>
+          <div class="ct-card-val">Thong Ngo</div>
+          <div class="ct-card-arr">↗</div>
+        </a>
+        <a href="https://damon13design.framer.website" target="_blank" rel="noopener" class="ct-card">
+          <div class="ct-card-label">Portfolio</div>
+          <div class="ct-card-val">damon13design<br/>.framer.website</div>
+          <div class="ct-card-arr">↗</div>
+        </a>
+      </div>
+
+      <!-- Availability banner -->
+      <div class="ct-avail rev d2">
+        <div class="ct-avail-left">
+          <div class="ct-avail-dot"></div>
+          <span class="ct-avail-txt">Currently Available</span>
+        </div>
+        <span class="ct-avail-note">Open to brand identity, digital product, and full-time roles · Ho Chi Minh City</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form — light -->
+  <section class="ct-form-section s-light from-dark">
+    <div class="wrap" style="position:relative;z-index:3">
+      <div class="ct-form-inner">
+        <!-- Left: intro + quick links -->
+        <div class="rev">
+          <h2 class="t-h2" style="color:var(--fg-l);margin-bottom:clamp(20px,3vw,36px)">Send a<br/><span style="color:var(--blue)">message.</span></h2>
+          <p class="ct-form-intro">Prefer talking first? Shoot a quick email or connect on Behance. I usually respond within 24 hours.</p>
+          <div class="ct-mini-links">
+            <a href="mailto:ngothong777@gmail.com" class="ct-ml">
+              <div><span class="ct-ml-lbl">Email</span>ngothong777@gmail.com</div>
+              <span class="ct-ml-arr">↗</span>
+            </a>
+            <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="ct-ml">
+              <div><span class="ct-ml-lbl">Behance</span>behance.net/thngng17</div>
+              <span class="ct-ml-arr">↗</span>
+            </a>
+            <a href="https://www.linkedin.com/in/thong-ngo-154481264" target="_blank" rel="noopener" class="ct-ml">
+              <div><span class="ct-ml-lbl">LinkedIn</span>Thong Ngo</div>
+              <span class="ct-ml-arr">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: form -->
+        <div class="rev d1">
+          <form onsubmit="handleForm(event)" novalidate>
+            <div class="fm-row">
+              <div class="fg"><label class="fl" for="fn">Full name</label><input id="fn" type="text" class="fi" placeholder="Your name" required autocomplete="name"/></div>
+              <div class="fg"><label class="fl" for="fe">Email</label><input id="fe" type="email" class="fi" placeholder="email@company.com" required autocomplete="email"/></div>
+            </div>
+            <div class="fg"><label class="fl" for="ft">Project type</label>
+              <select id="ft" class="fsl">
+                <option value="">Select project type</option>
+                <option>Brand Identity</option>
+                <option>Digital Product (UI/UX)</option>
+                <option>POSM / Merchandise</option>
+                <option>Social Media Design</option>
+                <option>Framer Website</option>
+                <option>Full-time Hire</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl" for="fm">Project description</label><textarea id="fm" class="fta" placeholder="What do you want to achieve? Deadline? Budget?" required></textarea></div>
+            <button type="submit" class="btn btn-p" style="width:100%;justify-content:center">Send message <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div class="f-logo">DAMON.13</div>
+      <div class="f-links">
+        <a href="https://www.behance.net/thngng17" target="_blank" rel="noopener" class="f-lnk">Behance</a>
+        <a href="https://www.linkedin.com/in/thong-ngo-154481264" target="_blank" rel="noopener" class="f-lnk">LinkedIn</a>
+        <a href="https://damon13design.framer.website" target="_blank" rel="noopener" class="f-lnk">Framer Portfolio</a>
+      </div>
+      <div class="f-copy">© 2025 Thong Ngo. All rights reserved.</div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ SCRIPT ══════════════════ -->
+<script>
+'use strict';
+
+const WORKS=[
+  {id:'posm',num:'01',title:'POSM & Merchandise',category:'Print · Merchandise',client:'Multiple Clients',year:'2024–2025',role:'Lead Designer',tags:['POSM','Merchandise','Print'],thumb:'https://framerusercontent.com/images/yTWs2d1dqQXlVqfFDrSkYeT2Hs.png',sub:'Point-of-sale materials and print products.',desc:'A comprehensive POSM project — banners, standees, paper bags and packaging. Consistent brand identity with strong visual impact at the point of sale.',pal:['#1a1a2e','#e94560','#f5f5f5'],links:[{t:'View Case Study',u:'https://damon13design.framer.website/works'},{t:'Behance ↗',u:'https://www.behance.net/thngng17'}]},
+  {id:'finwise',num:'02',title:'FINWISE — Finance App',category:'UX/UI · Digital Product',client:'Personal Project',year:'2024',role:'UX/UI Designer',tags:['UX/UI','Finance','Figma'],thumb:'https://framerusercontent.com/images/A7KeuErXykS6ClCnMhn53sQU0Q.png',sub:'Personal finance app — wireframe to high-fidelity.',desc:'UX Research → Information Architecture → high-fidelity prototype in Figma. Complex personal finance made simple: understand your finances in 3 seconds.',pal:['#0f1b2d','#0047FF','#ffffff'],links:[{t:'View on Framer ↗',u:'https://damon13design.framer.website/works/lumex'}]},
+  {id:'horizon',num:'03',title:'Horizon Atlas — Branding',category:'Brand Identity',client:'Horizon Atlas',year:'2024',role:'Brand Designer',tags:['Branding','Logo','Guidelines'],thumb:'https://framerusercontent.com/images/VaO3s1nRD6PBA2OlAKWutRWTs.jpg',sub:'Comprehensive Brand Identity — logo, type, color, guidelines.',desc:'Building a visual identity system from zero. Logo, typography, color system, and brand guidelines — flexible, consistent and designed to scale.',pal:['#1c1c1c','#c8a96e','#f0ede8'],links:[{t:'View on Framer ↗',u:'https://damon13design.framer.website/works/horizon-atlas'}]},
+  {id:'social',num:'04',title:'Social Media — Healthcare',category:'Social Media Design',client:'Healthcare Client',year:'2024–25',role:'Visual Designer',tags:['Social','Healthcare'],thumb:'https://framerusercontent.com/images/orDawILBFOZASn9jprrexENwWM.jpg',sub:'Social media visual system for Healthcare.',desc:'Clear and compelling healthcare content designed for trust and engagement. A consistent grid system with strong visual hierarchy that performs well across all platforms.',pal:['#f0f8ff','#0047FF','#212529'],links:[{t:'View on Framer ↗',u:'https://damon13design.framer.website/works/social'}]},
+  {id:'milano',num:'05',title:'Milano — Lunar New Year',category:'Packaging · Seasonal',client:'Milano Coffee VN',year:'2025',role:'Media Lead',tags:['Packaging','Seasonal','Brand'],thumb:'https://mir-s3-cdn-cf.behance.net/projects/404/2a6a12242534849.6970d4ab20a30.jpg',sub:'Seasonal packaging for Lunar New Year 2025.',desc:'Blending Vietnamese cultural identity with modern brand aesthetics for Milano Coffee. Seasonal packaging campaign — Behance featured: 97 views, 7 appreciations.',pal:['#c0392b','#f39c12','#fff8f0'],links:[{t:'View on Behance ↗',u:'https://www.behance.net/gallery/242534849/Milano-Coffee-Lunar-New-Year-Packaging'},{t:'Framer Portfolio ↗',u:'https://damon13design.framer.website'}]},
+];
+
+const SKILLS=[
+  {n:'Figma / Design Tools',p:95},{n:'Brand Identity & Visual Systems',p:90},
+  {n:'UI/UX Design',p:85},{n:'POSM & Print Design',p:92},
+  {n:'Social Media Design',p:88},{n:'Framer (No-code)',p:80},
+];
+
+/* Skill tags — grouped by category, no percentage */
+const SKILL_GROUPS=[
+  {cat:'Software',items:['Adobe Illustrator','Photoshop','Lightroom','Premiere Pro','After Effects','Figma','Framer']},
+  {cat:'Creative & Art Direction',items:['Brand Identity','Art Direction','UI/UX Design','POSM & Print','Food Styling','Product Photography']},
+  {cat:'Business & Strategy',items:['Team Leadership','Strategic Planning','KPI Management','Cross-functional Collaboration']},
+];
+
+/* Particles */
+function spawnPts(){
+  const c=document.getElementById('hp');if(!c)return;
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div');p.className='pt';
+    const s=(Math.random()*2+.5).toFixed(1);
+    p.style.cssText=`left:${Math.random()*100}%;width:${s}px;height:${s}px;background:rgba(0,71,255,${(Math.random()*.3+.12).toFixed(2)});animation-duration:${(Math.random()*10+8).toFixed(1)}s;animation-delay:${(Math.random()*14).toFixed(1)}s`;
+    c.appendChild(p);
+  }
+}
+
+/* Router */
+let page='home',skillsDone=false;
+function go(pg,wid){
+  if(pg===page&&!wid)return;
+  document.querySelectorAll('.page.on').forEach(p=>{p.classList.remove('on','page-in');setTimeout(()=>{p.style.display='none'},10)});
+  document.querySelectorAll('.n-link').forEach(l=>l.classList.remove('on'));
+  const valid=['home','works','about','contact','work-detail'];
+  if(pg==='work-detail'){const w=WORKS.find(x=>x.id===wid);if(!w){pg='works'}else{renderWD(w)}}
+  if(!valid.includes(pg))pg='home';
+  const tgt=document.getElementById('page-'+pg);
+  if(tgt){tgt.style.display='block';requestAnimationFrame(()=>{tgt.classList.add('on','page-in')})}
+  const nl=document.querySelector(`.n-link[data-page="${pg}"]`);
+  if(nl)nl.classList.add('on');
+  if(pg==='about'&&!skillsDone)setTimeout(initSkills,400);
+  page=pg;
+  const nh='#'+pg+(wid?'/'+wid:'');
+  if(location.hash!==nh)history.pushState({pg,wid:wid||null},'',nh);
+  closeNav();
+  window.scrollTo({top:0,behavior:'instant'});
+  setTimeout(initReveal,100);
+  setTimeout(addHover,160);
+  setTimeout(initMagTitles,320);
+}
+
+function renderWD(w){
+  document.getElementById('wd-cat').textContent=w.category;
+  document.getElementById('wd-title').textContent=w.title;
+  document.getElementById('wd-meta').innerHTML=[{l:'Client',v:w.client},{l:'Year',v:w.year},{l:'Role',v:w.role},{l:'Type',v:w.category}].map(x=>`<div class="wd-mi"><label>${x.l}</label><span>${x.v}</span></div>`).join('');
+  document.getElementById('wd-hero-img').innerHTML=`<img src="${w.thumb}" alt="${w.title}" loading="eager" onerror="this.parentElement.style.background='var(--dark2)';this.remove()"/>`;
+  document.getElementById('wd-sub').textContent=w.sub;
+  document.getElementById('wd-desc').innerHTML=`<p>${w.desc}</p>`;
+  document.getElementById('wd-pal').innerHTML=w.pal.map(c=>`<div style="width:28px;height:28px;background:${c};border:1px solid rgba(255,255,255,.07)" title="${c}"></div>`).join('');
+  document.getElementById('wd-gal').innerHTML='';
+  document.getElementById('wd-links').innerHTML=w.links.map(l=>`<a href="${l.u}" target="_blank" rel="noopener" class="btn btn-p">${l.t}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></a>`).join('');
+}
+
+function renderGrid(){
+  document.getElementById('works-grid').innerHTML=WORKS.map(w=>`
+    <article class="wc" data-work="${w.id}" tabindex="0" role="button" aria-label="${w.title}">
+      <div class="wc-img"><img src="${w.thumb}" alt="${w.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center\\'><span style=\\'font-family:var(--f-head);font-size:56px;font-weight:400;color:rgba(232,230,224,.04)\\'>${w.num}</span></div>'"/></div>
+      <div class="wc-body">
+        <div class="wc-meta-row"><span class="wc-n">${w.num}</span><span class="wc-year">${w.year}</span></div>
+        <div class="wc-title">${w.title}</div>
+        <div class="wc-cat">${w.category}</div>
+        <div class="wc-tags">${w.tags.map(t=>`<span class="wc-tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="wc-arr">↗</div>
+    </article>`).join('');
+  document.querySelectorAll('.wc').forEach(c=>{
+    c.addEventListener('click',()=>go('work-detail',c.dataset.work));
+    c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')go('work-detail',c.dataset.work)});
+  });
+}
+
+function renderHomeList(){
+  const el=document.getElementById('home-work-list');
+  el.innerHTML=WORKS.slice(0,4).map(w=>`
+    <div class="wi rev" data-work="${w.id}" tabindex="0" role="button" aria-label="${w.title}">
+      <div class="wi-fill"></div>
+      <div class="wi-n">${w.num}</div>
+      <div><div class="wi-title">${w.title}</div><div class="wi-cat">${w.category}</div></div>
+      <div class="wi-tags">${w.tags.map(t=>`<span class="wi-tag">${t}</span>`).join('')}</div>
+      <div class="wi-arr">↗</div>
+    </div>`).join('');
+  el.querySelectorAll('.wi').forEach(i=>{
+    i.addEventListener('click',()=>go('work-detail',i.dataset.work));
+    i.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')go('work-detail',i.dataset.work)});
+  });
+}
+
+function renderSkills(){
+  document.getElementById('skills-list').innerHTML=SKILL_GROUPS.map(g=>`
+    <div class="sk-group">
+      <div class="sk-cat-label">${g.cat}</div>
+      <div class="sk-tags">${g.items.map(i=>`<span class="sk-tag">${i}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+function initSkills(){
+  if(skillsDone)return;skillsDone=true;
+  /* tags appear with stagger */
+  document.querySelectorAll('.sk-tag').forEach((t,i)=>{
+    setTimeout(()=>t.classList.add('in'),i*45+200);
+  });
+}
+
+/* Reveal */
+let revObs;
+function initReveal(){
+  if(revObs)revObs.disconnect();
+  revObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revObs.unobserve(e.target)}})},{threshold:.05,rootMargin:'0px 0px -15px 0px'});
+  document.querySelectorAll('.rev:not(.in),.rev-l:not(.in),.rev-s:not(.in),.blur-reveal:not(.in)').forEach(el=>revObs.observe(el));
+}
+
+/* Cursor + Glow + Magnetic Titles */
+const $cur=document.getElementById('cur'),
+      $ring=document.getElementById('cur-ring'),
+      $glow=document.getElementById('cur-glow');
+let mx=0,my=0,rx=0,ry=0,gx=0,gy=0;
+
+function updateCursorCtx(){
+  const el=document.elementFromPoint(mx,my);if(!el)return;
+  let node=el;let isLight=false;
+  while(node&&node!==document.body){
+    const bg=getComputedStyle(node).backgroundColor;
+    if(bg&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent'){
+      isLight=bg.includes('244,243,240')||bg.includes('235,235,234')||bg.includes('255, 255, 255')||bg.includes('248');
+      break;
+    }
+    node=node.parentElement;
+  }
+  document.body.classList.toggle('on-light',isLight);
+  document.body.classList.toggle('glow-active',!isLight);
+}
+
+if(matchMedia('(pointer:fine)').matches){
+  document.addEventListener('mousemove',e=>{
+    mx=e.clientX;my=e.clientY;
+    $cur.style.left=mx+'px';$cur.style.top=my+'px';
+    updateCursorCtx();
+  },{passive:true});
+  document.addEventListener('mousedown',()=>document.body.classList.add('pressing'));
+  document.addEventListener('mouseup',()=>document.body.classList.remove('pressing'));
+
+  /* Smooth ring follow */
+  (function rafCursor(){
+    rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
+    $ring.style.left=Math.round(rx)+'px';$ring.style.top=Math.round(ry)+'px';
+    /* Glow follows even slower */
+    gx+=(mx-gx)*.06;gy+=(my-gy)*.06;
+    $glow.style.left=Math.round(gx)+'px';$glow.style.top=Math.round(gy)+'px';
+    requestAnimationFrame(rafCursor);
+  })();
+}
+
+/* ── Word-level flip on big titles — NO innerHTML mutation ── */
+function initMagTitles(){
+  /* All big title selectors — collect existing word-level elements only */
+  const SEL='.h-word, .ab-name, .testi-q, .cta-s h2, .t-disp';
+
+  /* Helper: attach flip listener to a group of word-elements under a parent */
+  function attachFlip(parent, words){
+    if(parent._flipAttached)return;
+    parent._flipAttached=true;
+    parent.addEventListener('mousemove',e=>{
+      words.forEach(w=>{
+        const r=w.getBoundingClientRect();
+        const dist=Math.hypot(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2));
+        if(dist<130&&!w._fl){
+          w._fl=true;
+          w.style.cssText+='display:inline-block;transition:transform .42s cubic-bezier(.22,1,.36,1);transform:rotateY(90deg);perspective:500px;';
+          setTimeout(()=>{
+            w.style.transform='rotateY(0deg)';
+            setTimeout(()=>{w.style.transform='';w.style.transition='';w._fl=false;},440);
+          },160);
+        }
+      });
+    });
+  }
+
+  /* 1. Hero heading — uses existing .h-word spans, safe */
+  document.querySelectorAll('.h-head').forEach(el=>{
+    const words=[...el.querySelectorAll('.h-word')];
+    if(words.length)attachFlip(el,words);
+  });
+
+  /* 2. Other big titles that don't have .h-word — wrap at word boundary
+     but ONLY split on spaces, never break mid-word, and only do it once */
+  const OTHER_SEL='.t-disp:not(.h-head *), .ab-name, .testi-q, .cta-s h2';
+  document.querySelectorAll(OTHER_SEL).forEach(el=>{
+    if(el._flipAttached)return;
+    /* Wrap each direct text node's words into span.flip-word
+       — process only direct text children, skip element children (colored spans etc.) */
+    function wrapTextNodeWords(node){
+      if(node.nodeType!==3)return;
+      const text=node.textContent;
+      if(!text.trim())return;
+      const frag=document.createDocumentFragment();
+      /* Split by spaces preserving the spaces */
+      const parts=text.split(/(\s+)/);
+      parts.forEach(part=>{
+        if(/^\s+$/.test(part)){
+          frag.appendChild(document.createTextNode(part));
+        } else if(part){
+          const s=document.createElement('span');
+          s.className='flip-word';
+          s.textContent=part;
+          frag.appendChild(s);
+        }
+      });
+      node.parentNode.replaceChild(frag,node);
+    }
+    /* Only walk direct children to avoid double-processing nested spans */
+    [...el.childNodes].forEach(n=>{
+      if(n.nodeType===3)wrapTextNodeWords(n);
+      /* recurse one level into existing element children (color spans) */
+      else if(n.nodeType===1)[...n.childNodes].forEach(n2=>{if(n2.nodeType===3)wrapTextNodeWords(n2);});
+    });
+    const words=[...el.querySelectorAll('.flip-word')];
+    if(words.length)attachFlip(el,words);
+  });
+}
+
+/* Re-init after page transitions (handled inside go()) */
+initMagTitles();
+
+function addHover(){
+  document.querySelectorAll('a,button,.wc,.wi,.svc,.pc,.ct-card,.nc,input,select,textarea').forEach(el=>{
+    if(el._h)return;el._h=true;
+    el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'),{passive:true});
+    el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'),{passive:true});
+  });
+}
+
+/* Scroll */
+let tk=false;
+window.addEventListener('scroll',()=>{
+  if(tk)return;tk=true;
+  requestAnimationFrame(()=>{
+    const y=window.scrollY,tot=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+    document.getElementById('nav').classList.toggle('scrolled',y>60);
+    document.getElementById('prog').style.width=(y/tot*100)+'%';
+    document.getElementById('stt').classList.toggle('on',y>400);
+    tk=false;
+  });
+},{passive:true});
+document.getElementById('stt').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+/* Nav hamburger */
+const hamBtn=document.getElementById('ham'),mNav=document.getElementById('m-nav');
+function closeNav(){mNav.classList.remove('open');hamBtn.classList.remove('open');hamBtn.setAttribute('aria-expanded','false')}
+hamBtn.addEventListener('click',()=>{const o=mNav.classList.toggle('open');hamBtn.classList.toggle('open',o);hamBtn.setAttribute('aria-expanded',String(o))});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeNav()});
+
+/* Link delegation */
+document.addEventListener('click',e=>{const el=e.target.closest('[data-page]');if(!el)return;e.preventDefault();go(el.dataset.page)});
+document.getElementById('work-back-btn').addEventListener('click',()=>go('works'));
+
+/* Form */
+function handleForm(e){
+  e.preventDefault();
+  const n=document.getElementById('fn').value.trim(),em=document.getElementById('fe').value.trim(),t=document.getElementById('ft').value,m=document.getElementById('fm').value.trim();
+  window.location.href=`mailto:ngothong777@gmail.com?subject=${encodeURIComponent(`[Portfolio] ${t||'Inquiry'} — ${n}`)}&body=${encodeURIComponent(`Name: ${n}\nEmail: ${em}\nType: ${t||'—'}\n\n${m}`)}`;
+}
+
+/* Hash router */
+function routeHash(){const h=location.hash.slice(1);if(!h){go('home');return}if(h.includes('work-detail/')){go('work-detail',h.split('/')[1]);return}go(['home','works','about','contact'].includes(h)?h:'home')}
+window.addEventListener('popstate',routeHash);
+
+/* Parallax */
+if(matchMedia('(pointer:fine) and (prefers-reduced-motion:no-preference)').matches){
+  window.addEventListener('scroll',()=>{const y=window.scrollY;document.querySelectorAll('.h-orb-a,.h-orb-b').forEach((o,i)=>{o.style.transform=`translateY(${y*(i===0?.05:.03)}px)`})},{passive:true});
+}
+
+spawnPts();renderGrid();renderHomeList();renderSkills();routeHash();initReveal();addHover();initMagTitles();
+
+</script>
+</body>
+</html>
