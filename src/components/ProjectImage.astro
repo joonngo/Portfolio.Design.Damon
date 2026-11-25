@@ -1,0 +1,9 @@
+---
+import { Picture } from 'astro:assets';
+import Fpo from './Fpo.astro';
+import type { Img } from '../lib/projects';
+interface Props { img?: Img; file: string; client: string; widths?: number[]; sizes?: string; eager?: boolean; class?: string; style?: string }
+const { img, file, client, widths = [480, 960, 1600], sizes = '100vw', eager, class: c, style } = Astro.props;
+const ws = img ? [...new Set(widths.map((w) => Math.min(w, img.src.width)))] : [];
+---
+{img?.src.format === 'svg' ? <span class:list={['pic', c]} style={style}><img src={img.src.src} alt={img.alt || `${client} project image`} width={img.src.width} height={img.src.height} loading={eager ? 'eager' : 'lazy'} /></span> : img ? <Picture src={img.src} alt={img.alt || `${client} project image`} formats={['avif', 'webp']} widths={ws} sizes={sizes} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : 'auto'} pictureAttributes={{ class: `pic ${c ?? ''}`, style }} /> : <Fpo file={file} class={c} style={style} />}

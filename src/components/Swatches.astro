@@ -1,0 +1,9 @@
+---
+import T from './T.astro';
+import type { Project } from '../lib/projects';
+const { p } = Astro.props as { p: Project };
+---
+<ul class="swl">
+{p.swatches.length ? p.swatches.map((s) => <li class="sw"><i style={`background:${s.hex}`}></i><span class="m">{s.hex.toUpperCase()}<br /><span class="mute"><T t={s.name} /></span></span></li>)
+ : <li class="sw"><i class="fpo"></i><span class="m">HEX TBC<br /><span class="mute">{p.code}</span></span></li>}
+</ul>

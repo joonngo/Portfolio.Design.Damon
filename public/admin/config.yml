@@ -1,0 +1,41 @@
+backend:
+  name: github
+  repo: joonngo/Portfolio.Design.Damon
+  branch: main
+  auth_methods: [token]
+site_url: https://joonngo.github.io/Portfolio.Design.Damon/
+media_folder: /src/assets/projects
+public_folder: /src/assets/projects
+media_libraries:
+  default:
+    config:
+      max_file_size: 5242880
+slug: { encoding: ascii, clean_accents: true }
+collections:
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: /src/content/projects
+    create: true
+    slug: '{{slug}}'
+    summary: '{{order}}. {{title}}'
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: slug, label: 'Slug (a-z, 0-9, dấu -)', widget: string, pattern: ['^[a-z0-9]+(-[a-z0-9]+)*$', 'Chỉ dùng a-z, 0-9 và dấu -'] }
+      - { name: client, label: Client, widget: string }
+      - { name: scope, label: Scope, widget: string }
+      - { name: industry, label: Industry, widget: string }
+      - { name: code, label: 'Mã file (MLN, SHS…)', widget: string }
+      - { name: featured, label: 'Selected (tắt = Archive)', widget: boolean, default: false, required: false }
+      - { name: order, label: Thứ tự, widget: number, value_type: int, default: 99 }
+      - { name: draft, label: 'Nháp (không lên site)', widget: boolean, default: true, required: false }
+      - { name: year, label: Year, widget: string, required: false }
+      - { name: role, label: Role, widget: string, required: false }
+      - { name: cover, label: Cover, widget: object, required: false, collapsed: true, fields: [{ name: src, label: Ảnh, widget: image, required: false }, { name: alt, label: Alt, widget: string, required: false }] }
+      - { name: gallery, label: Gallery, widget: list, required: false, fields: [{ name: src, label: Ảnh, widget: image }, { name: alt, label: Alt, widget: string }, { name: caption, label: Caption, widget: string, required: false }] }
+      - { name: swatches, label: Swatches, widget: list, required: false, fields: [{ name: name, label: Tên màu, widget: string }, { name: hex, label: HEX, widget: string, pattern: ['^#[0-9A-Fa-f]{6}$', 'Ví dụ #1F3BFF'] }] }
+      - { name: credits, label: Credits, widget: list, required: false, fields: [{ name: name, label: Tên, widget: string }, { name: role, label: Vai trò, widget: string }] }
+      - { name: brief, label: Brief, widget: text, required: false }
+      - { name: approach, label: Approach, widget: text, required: false }
+      - { name: result, label: Result, widget: text, required: false }
+      - { name: link, label: Link ngoài, widget: string, required: false }

@@ -1,0 +1,20 @@
+---
+import type { Project } from '../lib/projects';
+import { no } from '../lib/projects';
+import { href } from '../lib/url';
+import T from './T.astro';
+import ProjectImage from './ProjectImage.astro';
+const { items } = Astro.props as { items: Project[] };
+/* Where each print lands: left %, top vw, width vw, tilt, shape of a sheet with no image yet. Repeats every five. */
+const spots = [[3, 7, 50, -2.6, '16/9'], [63, 0, 23, 4.5, '3/4'], [40, 42, 21, -6, '4/5'], [66, 40, 28, 3, '3/2'], [5, 46, 24, 5.5, '1/1']] as const;
+const groups = Math.ceil(items.length / 5);
+---
+<div class="pile" style={`--h:${groups * 78}`}>
+  {items.map((p, i) => { const [x, y, w, r, ar] = spots[i % 5]; return (
+    <a class="row" data-loose data-toss data-par={[0.05, -0.1, 0.12, -0.06, 0.09][i % 5]} data-rv="throw" href={href(`/work/${p.slug}`)} data-cur="View" draggable="false"
+      style={`--x:${x}%;--y:${y + Math.floor(i / 5) * 78};--w:${w};--r:${r}deg;--fx:${i % 2 ? 160 : -160}px;--fr:${i % 2 ? 14 : -12}deg`}>
+      <span class="face">{p.cover ? <ProjectImage img={p.cover} file="" client={p.client} widths={[480, 960, 1440]} sizes={`(max-width:900px) 84vw, ${w}vw`} />
+        : <span class={`sheet v${i % 4}`} style={`aspect-ratio:${ar}`} aria-hidden="true"><b>{p.code}</b><i class="m">proof, images to come</i></span>}</span>
+      <span class="cap2"><span class="m mute">{no(i)}</span><span class="c"><T t={p.client} /></span><span class="c3 m"><T t={p.scope} /></span><span class="ar" aria-hidden="true">↗</span></span>
+    </a>); })}
+</div>

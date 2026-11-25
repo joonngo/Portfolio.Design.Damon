@@ -1,0 +1,8 @@
+---
+import type { Project } from '../lib/projects';
+import T from './T.astro';
+import ProjectImage from './ProjectImage.astro';
+const { items } = Astro.props as { items: Project[] };
+const tilt = [-7, 5, -3, 8, -5, 3], drop = [0, 46, -14, 30, 60, 8], size = [300, 360, 260, 320, 280, 340];
+---
+{items.length > 0 && <section class="band arch" id="archive" tabindex="-1"><h2 class="tab">Archive</h2><ul>{items.map((p, i) => { const Tag = p.link ? 'a' : 'div'; return <li data-loose data-toss data-rv="throw" style={`--r:${tilt[i % 6]}deg;--dy:${drop[i % 6]}px;--s:${size[i % 6]}px;--fx:${i % 2 ? 120 : -120}px;--fr:${i % 2 ? 16 : -16}deg`}><Tag href={p.link} data-cur={p.link ? 'View' : 'Drag'} draggable="false"><ProjectImage img={p.cover} file={`${p.code}_cover.jpg`} client={p.client} widths={[360, 720]} sizes="(max-width:700px) 80vw, 360px" /><span class="m"><T t={p.client} /><br /><span class="mute"><T t={p.scope} /></span></span></Tag></li>; })}</ul></section>}

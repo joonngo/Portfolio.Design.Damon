@@ -1,0 +1,5 @@
+---
+interface Props { file: string; style?: string; class?: string }
+const { file, style, class: c } = Astro.props;
+---
+<div class:list={['fpo', c]} style={style} role="img" aria-label={`Image to come: ${file}`}><span class="tag m mute" aria-hidden="true">FPO</span><span class="fn m" aria-hidden="true">{file}</span></div>

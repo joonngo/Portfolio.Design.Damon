@@ -1,0 +1,53 @@
+---
+import '@fontsource/schibsted-grotesk/latin-400.css';
+import '@fontsource/schibsted-grotesk/latin-500.css';
+import '@fontsource/schibsted-grotesk/latin-800.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/vietnamese-400.css';
+import '@fontsource/hanken-grotesk/latin-400.css';
+import '@fontsource/hanken-grotesk/vietnamese-400.css';
+import '@fontsource/hanken-grotesk/latin-500.css';
+import '@fontsource/hanken-grotesk/vietnamese-500.css';
+import '@fontsource/hanken-grotesk/latin-800.css';
+import '@fontsource/hanken-grotesk/vietnamese-800.css';
+import '../styles/global.css';
+import { href } from '../lib/url';
+import { SITE } from '../lib/base.mjs';
+import { site } from '../lib/site';
+interface Props { title: string; description: string; ogImage?: string; noindex?: boolean; accent?: string; home?: boolean }
+const { title, description, ogImage = href('/og/home.png'), noindex, accent, home } = Astro.props;
+const url = SITE + Astro.url.pathname;
+const nav = [['Work', '/#work'], ['About', '/#about'], ['Contact', '/#contact']] as const;
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title><meta name="description" content={description}>
+<link rel="canonical" href={url}>{noindex && <meta name="robots" content="noindex">}
+<link rel="icon" href={href('/favicon.svg')} type="image/svg+xml"><link rel="sitemap" href={href('/sitemap-index.xml')}>
+<meta property="og:title" content={title}><meta property="og:description" content={description}><meta property="og:url" content={url}><meta property="og:type" content="website"><meta property="og:image" content={SITE + ogImage}><meta name="twitter:card" content="summary_large_image">
+<script is:inline>document.documentElement.classList.add('js')</script>
+</head>
+<body style={accent ? `--bar:${accent}` : undefined}>
+<a class="skip" href="#main">Skip to content</a>
+<div id="cur" aria-hidden="true"><i></i><span class="m"></span></div>
+<header>
+  <a class="me" href={href('/')}><b>Damon Ngo</b></a>
+  <span class="m mute hide" lang="vi">Media Leader, MOVE / Đông Dương Group</span>
+  <span class="m mute hide" lang="vi" data-clock>Sài Gòn</span>
+  <span class="m hide"><span class="blink"></span>Available for freelance</span>
+  <nav class="m" aria-label="Main">{nav.map(([n, p]) => <a href={href(p)}>{n}</a>)}</nav>
+  <i class="bar" aria-hidden="true"></i>
+</header>
+<main id="main"><slot /></main>
+<footer class="band">
+  {home ? <div data-loose style="--r:-4deg" class="slip"><b class="fname">Damon.13</b><p class="m mute">Damon Ngo, art direction, <span lang="vi">Hồ Chí Minh</span></p></div> : <div><h2>Have something going to print? Tell me.</h2><a class="go" href={href('/#contact')} data-cur="View">Start a project <span aria-hidden="true">↗</span></a></div>}
+  <div class="col m slip" data-loose style="--r:3deg"><span class="mute">Contact</span><a href={`mailto:${site.email}`}>{site.email}</a><a href={site.behance}>Behance</a><a href={site.linkedin}>LinkedIn</a></div>
+  <div class="col m slip" data-loose style="--r:-2deg;--dy:34px"><span class="mute">Now</span><span>Media Leader, MOVE</span><span lang="vi">Đông Dương Group</span><span>Freelance: brand, packaging, campaign</span></div>
+  <div class="col m slip" data-loose style="--r:5deg;--dy:-14px"><span class="mute">Colophon</span><span>Schibsted Grotesk, Hanken Grotesk, IBM Plex Mono</span><span>Astro, GSAP, Lenis</span></div>
+  <div class="fine m mute"><span>© Damon Ngo, <span lang="vi">Hồ Chí Minh</span></span><span lang="vi" data-clock>Sài Gòn</span></div>
+</footer>
+<script>import '../scripts/ambient'; import '../scripts/menu'; import '../scripts/motion';</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+---
+import { runs } from '../lib/vi';
+const { t } = Astro.props as { t: string };
+---
+{runs(t).map((r) => r.vi ? <span lang="vi">{r.t}</span> : r.t)}
