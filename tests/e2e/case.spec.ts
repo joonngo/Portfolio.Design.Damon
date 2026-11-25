@@ -13,13 +13,12 @@ test('all case studies complete, unique meta, real OG', async ({ page, request }
   }
   expect(titles.size).toBe(5);
 });
-test('empty project: no empty sections, still a way to write', async ({ page }) => {
-  await page.goto('work/shinsho-ramen/');
-  for (const id of ['brief', 'approach', 'deliverables', 'result']) await expect(page.locator(`#${id}`)).toHaveCount(0);
-  await expect(page.getByText('Case study in progress')).toBeVisible();
-  await page.locator('#cta a').click(); await page.waitForSelector('#flow[data-ready]');
-  await expect(page.locator('#log')).toContainText('Brand'); await expect(page.locator('legend', { hasText: 'Rough budget?' })).toBeVisible();
+test('every case has pictures; CTA preselects', async ({ page }) => {
+  for (const x of slugs) { await page.goto(`work/${x}/`); expect(await page.locator('#deliverables img, #approach img').count()).toBeGreaterThanOrEqual(1); await expect(page.locator('#brief')).toBeVisible(); await expect(page.locator('.fpo')).toHaveCount(0); }
+  await page.goto('work/shinsho-ramen/'); await page.locator('#cta a').click(); await page.waitForSelector('#flow[data-ready]'); await expect(page.locator('#log')).toContainText('Brand');
 });
+test('a cover is never blown up past its pixels', async ({ page, isMobile }) => { test.skip(!!isMobile); for (const x of slugs) { await page.goto(`work/${x}/`); const r = await page.locator('.cov img').evaluate((e: HTMLImageElement) => [e.offsetWidth, Number(e.getAttribute('width')), e.offsetHeight]); expect(r[0]).toBeLessThanOrEqual(r[1] * 1.3); expect(r[2]).toBeLessThanOrEqual(900); } });
+test('MOVE: documented colours and credit', async ({ page }) => { await page.goto('work/move/'); for (const t of ['#BE0000', '#0B1718', '#A331F4']) await expect(page.locator('.swl')).toContainText(t); await expect(page.locator('#credits')).toContainText('Ntthuytien'); });
 test('overlay CTA closes, lands on the form, preselects', async ({ page }) => {
   await page.goto(''); await page.waitForSelector('#desk[data-ready]'); await page.locator('.row').nth(2).click(); await page.locator('dialog #cta a').click();
   await expect(page.locator('dialog#case')).toBeHidden(); await expect(page.locator('#log')).toContainText('Campaign');
@@ -30,7 +29,7 @@ test('Milano result; last wraps to first', async ({ page }) => {
   await page.goto('work/cham-kem-bo/'); await expect(page.locator('#next')).toHaveAttribute('href', /milano-coffee\/$/);
 });
 test('Milano: gallery split, captions, credits', async ({ page }) => {
-  await page.goto('work/milano-coffee/'); await expect(page.locator('#approach img')).toHaveCount(3); await expect(page.locator('#deliverables img')).toHaveCount(3); await expect(page.locator('#brief')).toContainText('paper cup');
+  await page.goto('work/milano-coffee/'); await expect(page.locator('#approach img')).toHaveCount(3); expect(await page.locator('#deliverables img').count()).toBeGreaterThan(6); await expect(page.locator('#brief')).toContainText('cup');
   for (const n of ['Quoc Vuong', 'Jahuy', 'Thong Ngo']) await expect(page.locator('#credits')).toContainText(n);
-  expect(await page.locator('figcaption').count()).toBe(6);
+  expect(await page.locator('figcaption').count()).toBeGreaterThan(9);
 });

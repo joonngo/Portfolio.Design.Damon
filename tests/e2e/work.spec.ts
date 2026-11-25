@@ -2,7 +2,7 @@ import { test, expect } from './util';
 test('five rows in order', async ({ page }) => {
   await page.goto('');
   await expect(page.locator('.row .c')).toHaveText(['Milano Coffee', 'Shinsho Ramen', 'Gong Cha', 'MOVE', 'Chạm kem bơ']);
-  await expect(page.locator('.arch li')).toHaveCount(3);
+  await expect(page.locator('.arch li')).toHaveCount(4);
   for (const r of await page.locator('.row').all()) expect((await r.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 });
 test('prints lie at different angles and sizes; hover straightens', async ({ page, isMobile }) => {
@@ -26,6 +26,7 @@ test('Vietnamese name whole and linked', async ({ page }) => {
   const f = await page.evaluate(async () => { await document.fonts.ready; const e = document.querySelectorAll('.row')[4].querySelector('[lang=vi]')!; const s = getComputedStyle(e); return [s.fontFamily, [...document.fonts].some((x) => x.family.includes('Hanken') && x.status === 'loaded')]; });
   expect(String(f[0])).toContain('Hanken'); expect(f[1]).toBe(true);
 });
+test('no proof sheets left', async ({ page }) => { await page.goto(''); await expect(page.locator('.row .face img')).toHaveCount(5); await expect(page.locator('#wall .sw .fpo')).toHaveCount(0); });
 test('every project has a face', async ({ page }) => {
   await page.goto(''); const n = await page.locator('.row .face').evaluateAll((l) => l.filter((e) => e.getBoundingClientRect().height > 100).length); expect(n).toBe(5);
 });

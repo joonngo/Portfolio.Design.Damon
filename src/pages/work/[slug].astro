@@ -8,12 +8,14 @@ export async function getStaticPaths() { const all = await load(); return select
 const { p, n } = Astro.props as { p: Project; n: Project };
 const paras = (s?: string) => (s ? s.split(/\n\s*\n/) : []);
 const g = p.gallery, mood = g.length >= 6 ? g.slice(0, 3) : [], out = g.length >= 6 ? g.slice(3) : g;
+/* Keep small or tall covers at an honest size. */
+const cs = p.cover?.src, cov = cs ? `max-width:min(100%,${Math.round(cs.width * 1.2)}px,calc(86svh*${(cs.width / cs.height).toFixed(3)}))` : undefined;
 const facts = [['Scope', p.scope], ['Industry', p.industry], ['Role', p.role], ['Year', p.year]].filter((x): x is [string, string] => !!x[1]);
 const type = projectType(p.scope), bare = !p.brief && !p.approach && !p.result && !g.length && !p.swatches.length;
 ---
 <Base title={`${p.client}, ${p.scope}`} description={p.brief?.slice(0, 155) ?? `${p.client}: ${p.scope}. Art direction by Damon Ngo.`} ogImage={href(`/og/${p.slug}.png`)} accent={p.swatches[0]?.hex}>
 <article class="case">
-  <div class="cover band"><div class="hd"><h1 data-rv="text"><T t={p.client} /></h1><dl class="m">{facts.map(([k, v]) => <div><dt class="mute">{k}</dt><dd><T t={v} /></dd></div>)}</dl></div><div class="cov" data-rv="img"><ProjectImage img={p.cover} file={`${p.code}_cover.jpg`} client={p.client} widths={[640, 1200, 2000]} sizes="94vw" eager /></div></div>
+  <div class="cover band"><div class="hd"><h1 data-rv="text"><T t={p.client} /></h1><dl class="m">{facts.map(([k, v]) => <div><dt class="mute">{k}</dt><dd><T t={v} /></dd></div>)}</dl></div><div class="cov" data-rv="img" style={cov}><ProjectImage img={p.cover} file={`${p.code}_cover.jpg`} client={p.client} widths={[640, 1200, 2000]} sizes="94vw" eager /></div></div>
   {bare && <p class="band m soon">Case study in progress.</p>}
   {p.brief && <section id="brief" class="band s-brief"><h2 class="lab m">Brief</h2><div class="lead">{paras(p.brief).map((x) => <p><T t={x} /></p>)}</div></section>}
   {(p.approach || mood.length > 0) && <section id="approach" class="band s-app"><div><h2 class="lab m">Approach</h2>{paras(p.approach).map((x) => <p><T t={x} /></p>)}</div>{mood.length > 0 && <div class="mood">{mood.map((x) => <figure data-loose data-toss data-rv="img"><ProjectImage img={x} file="" client={p.client} widths={[400, 800]} sizes="30vw" />{x.caption && <figcaption class="m mute"><T t={x.caption} /></figcaption>}</figure>)}</div>}</section>}

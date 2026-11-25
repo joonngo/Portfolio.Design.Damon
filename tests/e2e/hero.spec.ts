@@ -80,7 +80,7 @@ test('white ground, paper pieces keep an edge', async ({ page }) => {
   expect(await page.locator('.note').evaluateAll((l) => l.every((e) => parseFloat(getComputedStyle(e).borderTopWidth) >= 1))).toBe(true);
 });
 test('cover is in place before the wall script runs', async ({ page }) => {
-  await page.route('**/StudioWall*.js', async (r) => { await new Promise((z) => setTimeout(z, 1500)); await r.continue(); });
+  await page.route('**/StudioWall*.js', async (r) => { await new Promise((z) => setTimeout(z, 4000)); await r.continue(); });
   await page.goto('', { waitUntil: 'commit' }); await page.waitForSelector('.big img', { state: 'attached' }); await page.waitForTimeout(700);
   expect(await page.locator('#desk').getAttribute('data-ready')).toBeNull();
   const i = page.locator('.big img'); await expect(i).toBeVisible(); const a = (await i.boundingBox())!;
