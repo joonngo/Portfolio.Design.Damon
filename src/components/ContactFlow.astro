@@ -10,7 +10,7 @@ const steps = [
 <div id="flow" data-endpoint={import.meta.env.PUBLIC_FORM_ENDPOINT || site.formEndpoint} data-to={site.email}>
   <ol id="log" class="m" aria-label="Your answers"></ol>
   <form novalidate>
-    {steps.map((s, i) => <fieldset data-step={s.key} hidden={i > 0}><legend tabindex="-1">{s.q}</legend><div class="opts">{s.o.map((o, j) => <button type="button" data-loose style={`--r:${[[-5, 3, -2, 6], [4, -3, 5, -6], [-4, 5, -3, 2]][i][j]}deg;--dy:${[0, 34, -8, 22][(i + j) % 4]}px`} aria-pressed="false" value={o}>{o}</button>)}</div></fieldset>)}
+    {steps.map((s, i) => <fieldset data-step={s.key} hidden={i > 0}><legend tabindex="-1">{s.q}</legend><div class="opts">{s.o.map((o) => <button type="button" aria-pressed="false" value={o}>{o}</button>)}</div></fieldset>)}
     <fieldset data-step="final" hidden><legend tabindex="-1">Last one. Tell me about it.</legend>
       <label>Message<textarea name="message" rows="4" aria-describedby="e-message"></textarea></label><p class="err m" id="e-message"></p>
       <div class="two"><div><label>Name<input name="name" autocomplete="name" aria-describedby="e-name"></label><p class="err m" id="e-name"></p></div><div><label>Email<input name="email" type="email" autocomplete="email" aria-describedby="e-email"></label><p class="err m" id="e-email"></p></div></div>

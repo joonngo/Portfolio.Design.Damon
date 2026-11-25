@@ -1,0 +1,9 @@
+---
+import type { Project } from '../lib/projects';
+import { href } from '../lib/url';
+import T from './T.astro';
+const { items } = Astro.props as { items: Project[] };
+const list = [['Brand', 'Logo, colour, type, pattern, guideline.'], ['Packaging', 'Cups, boxes, labels and bags, with dielines.'], ['Campaign', 'Key visuals, seasonal sets, booths.']];
+---
+<section class="band" id="services" tabindex="-1"><h2>What I take on</h2>
+<ul class="svcs">{list.map(([n, d]) => <li><h3>{n}</h3><p>{d}</p><p class="ex"><span class="mute">Seen in</span> {items.filter((p) => p.tags.includes(n)).map((p, i) => <>{i > 0 && ', '}<a class="u" href={href(`/work/${p.slug}`)}><T t={p.client} /></a></>)}</p><a class="go ask" data-project={n} href={href(`/?project=${n}#contact`)}>Ask about {n.toLowerCase()} <span aria-hidden="true">↗</span></a></li>)}</ul></section>

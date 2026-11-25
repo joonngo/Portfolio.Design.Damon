@@ -20,6 +20,7 @@ const projects = defineCollection({
       featured: z.boolean().default(false),
       order: z.number(),
       draft: z.boolean().default(false),
+      tags: z.preprocess((v) => v ?? [], z.array(z.enum(['Brand', 'Packaging', 'Campaign']))),
       year: text,
       role: text,
       cover: z.preprocess(hasSrc, img.optional()),

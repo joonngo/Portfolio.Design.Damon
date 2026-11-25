@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import StudioWall from '../components/StudioWall.astro';
 import WorkIndex from '../components/WorkIndex.astro';
 import ArchiveGrid from '../components/ArchiveGrid.astro';
+import Services from '../components/Services.astro';
 import About from '../components/About.astro';
 import ContactFlow from '../components/ContactFlow.astro';
 import CaseOverlay from '../components/CaseOverlay.astro';
@@ -10,11 +11,12 @@ import { site } from '../lib/site';
 import { load } from '../lib/load'; import { archive, selected } from '../lib/projects';
 const all = await load(), items = selected(all);
 ---
-<Base home title="Damon Ngo, art direction" description="Art direction for brand, packaging and campaigns, from Ho Chi Minh City.">
-<StudioWall items={items} extra={archive(all)} />
-<section class="band" id="work" tabindex="-1"><h2 class="tab">Selected work</h2><WorkIndex items={items} /></section>
+<Base title="Damon Ngo, art direction" description="Art direction for brand, packaging and campaigns, from Ho Chi Minh City.">
+<StudioWall items={items} />
+<section class="band" id="work" tabindex="-1"><h2>Selected work</h2><WorkIndex items={items} /></section>
 <ArchiveGrid items={archive(all)} />
+<Services items={items} />
 <About />
-<section class="band contact" id="contact" tabindex="-1"><div class="slip side m" data-loose style="--r:-4deg"><h2 class="lab m">Start a project</h2><p>Or write to <a class="u" href={`mailto:${site.email}`}>{site.email}</a></p><p class="mute" lang="vi">Nhắn tiếng Việt cũng được</p></div><ContactFlow /></section>
+<section class="band contact" id="contact" tabindex="-1"><div class="side"><h2>Start a project</h2><p>Four short questions. I reply by email.</p><p>Or write to <a class="u" href={`mailto:${site.email}`}>{site.email}</a></p><p class="mute" lang="vi">Nhắn tiếng Việt cũng được</p></div><ContactFlow /></section>
 <CaseOverlay />
 </Base>

@@ -1,17 +1,17 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { scroller } from './scroll';
-import { rng, scatter, sheet, type Rect } from '../lib/wall';
+import { scatter, sheet, type Rect } from '../lib/wall';
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
-const desk = $('#desk'), intro = $('#intro'), head = $('#sheetHead'), cells = $('#cells');
+const desk = $('#desk'), intro = $('#intro'), cells = $('#cells');
 const frs = [...document.querySelectorAll<HTMLElement>('.frag')];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, fine = matchMedia('(hover:hover) and (pointer:fine)').matches;
 type P = { el: HTMLElement; d: HTMLElement; p: HTMLElement; w: number; h: number; ax: number; ay: number; rot: number; dep: number };
 let data: P[] = [], tl: gsap.core.Timeline | null = null, st: ScrollTrigger | null = null, progress = 0, dragged = false;
-/* A different pinning on each visit; ?seed= fixes it. */
-const seed = Number(new URLSearchParams(location.search).get('seed')) || [13, 21, 34, 55, 89, 144][(Math.random() * 6) | 0];
+/* One layout, always the same; ?seed= tries another. */
+const seed = Number(new URLSearchParams(location.search).get('seed')) || 13;
 let flat = reduce;
 const holds = new Set<() => void>();
 let bounds: Rect = { x: 0, y: 0, w: 0, h: 0 };
@@ -20,42 +20,29 @@ function build() {
   flat = reduce || innerHeight < 620;
   desk.toggleAttribute('data-flat', flat);
   desk.style.height = '';
-  const W = desk.clientWidth, pad = Math.max(W * 0.03, 14), wide = W > 900, top = 76;
-  let H = desk.clientHeight, bot = H - 50;
-  bounds = { x: pad, y: top, w: W - pad * 2, h: bot - top };
+  const W = desk.clientWidth, pad = Math.max(W * 0.03, 16), wide = W > 900;
+  const left = wide ? W * 0.44 : pad, top = wide ? 84 : intro.offsetTop + intro.offsetHeight + 18;
   const vis = frs.filter((f) => f.offsetParent);
   data = vis.map((el, i) => ({ el, d: el.querySelector('.d')!, p: el.querySelector('.p')!, w: el.offsetWidth, h: el.offsetHeight, ax: 0, ay: 0, rot: 0, dep: i ? 0.6 + ((i * 7) % 10) / 7 : 0.35 }));
-  const big = data[0];
-  big.ax = wide ? W * 0.53 - big.w / 2 : pad + 16; big.ay = wide ? H * 0.46 - big.h / 2 : top + 44;
-  const reserved = [
-    { x: big.ax - 26, y: big.ay - 36, w: big.w + 52, h: big.h + (wide ? 78 : 104) },
-    { x: intro.offsetLeft - 12, y: intro.offsetTop - 14, w: intro.offsetWidth + 24, h: intro.offsetHeight + 28 },
-  ];
-  scatter(data.slice(1), bounds, reserved, wide ? 9 : 4, wide ? 5 : 9, seed).forEach((o, i) => { const d = data[i + 1]; d.ax = o.x; d.ay = o.y; d.rot = o.rot; });
-
-  const cols = wide ? (data.length > 24 ? 8 : 6) : W > 700 ? 6 : 4, left = wide ? W * 0.36 : pad;
-  gsap.set(head, { top: wide ? top + 24 : top + 8, left: pad, width: wide ? W * 0.36 - pad - 32 : W - pad * 2 });
-  $('#count').textContent = String(data.length);
-  if (flat) gsap.set(intro, { top: head.offsetTop + head.offsetHeight + 20, bottom: 'auto' });
-  const sTop = wide ? top + 24 : top + 8 + head.offsetHeight + 12 + (flat ? intro.offsetHeight + 20 : 0);
-  /* Without a pin the section may be as tall as the sheet needs. */
-  const need = sTop + Math.ceil(data.length / cols) * (flat ? 104 : 56) + 58;
-  if (need > H) { desk.style.height = need + 'px'; H = need; bot = H - 50; }
-  const out = sheet(data.map((d, i) => (i ? d : { w: d.w + 40, h: d.h + 70 })), { x: left, y: sTop, w: W - pad - left, h: bot - sTop - 8 }, cols);
-  const J = rng(seed + 1), tilt = data.map(() => [(J() - 0.5) * 11, (J() - 0.5) * 12, (J() - 0.5) * 10]);
+  const cols = wide ? 4 : 3, rows = Math.ceil(data.length / cols), need = top + Math.max(rows * 96, wide ? 440 : 330) + 24;
+  let H = desk.clientHeight; if (need > H) { desk.style.height = need + 'px'; H = need; }
+  /* The text keeps its own side; everything that moves stays in this area. */
+  const area = { x: left, y: top, w: W - pad - left, h: H - top - 24 }; bounds = area;
+  const big = data[0]; big.ax = area.x + (area.w - big.w) * (wide ? 0.5 : 0); big.ay = wide ? H * 0.5 - big.h / 2 : area.y + 10;
+  const reserved = [{ x: big.ax - 14, y: big.ay - 14, w: big.w + 28, h: big.h + 28 }];
+  scatter(data.slice(1), area, reserved, wide ? 6 : 4, wide ? 6 : 7, seed).forEach((o, i) => { const d = data[i + 1]; d.ax = o.x; d.ay = o.y; d.rot = o.rot * 0.7; });
+  const out = sheet(data, { ...area, y: area.y + (wide ? Math.max(0, (area.h - rows * Math.min(area.w / cols * 1.02, area.h / rows)) / 2) : 0) }, cols);
   cells.replaceChildren(...out.map((o, i) => {
     const c = document.createElement('div'); c.className = 'cell';
-    Object.assign(c.style, { left: o.cell.x + 'px', top: o.cell.y + 'px', width: o.cell.w + 'px', height: o.cell.h + 'px', rotate: ((i * 37) % 9 - 4) * 0.35 + 'deg' });
-    const s = document.createElement('span'); s.className = 'm mute'; s.textContent = `${o.label} · ${data[i].el.dataset.lab}`; c.append(s); return c;
+    Object.assign(c.style, { left: o.cell.x + 'px', top: o.cell.y + 'px', width: o.cell.w + 'px', height: o.cell.h + 'px' });
+    const l = document.createElement('span'); l.className = 'm mute'; l.textContent = `${o.label} · ${data[i].el.dataset.lab}`; c.append(l); return c;
   }));
   data.forEach((d, i) => gsap.set(d.el, { x: d.ax, y: d.ay, rotation: d.rot, scale: 1, zIndex: i ? 2 + (i % 7) : 5 }));
   tl = gsap.timeline({ defaults: { ease: 'expo.inOut', duration: 1 } });
-  data.forEach((d, i) => tl!.to(d.el, { x: out[i].x + (i ? 0 : 20) + tilt[i][1], y: out[i].y + (i ? 0 : 35) + tilt[i][2], rotation: tilt[i][0], scale: out[i].scale }, i * 0.016));
-  if (!flat) tl.to(intro, { autoAlpha: 0, y: -12, duration: 0.3, ease: 'power2.in' }, 0);
-  tl.to('.cell', { opacity: 1, duration: 0.35, stagger: 0.008, ease: 'power2.out' }, 0.6)
-    .fromTo(head, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: 'power3.out' }, 0.75);
+  data.forEach((d, i) => tl!.to(d.el, { x: out[i].x, y: out[i].y, rotation: 0, scale: out[i].scale }, i * 0.02));
+  tl.to('.cell', { opacity: 1, duration: 0.35, stagger: 0.012, ease: 'power2.out' }, 0.55);
   if (flat) { tl.progress(1); progress = 1; }
-  else st = ScrollTrigger.create({ trigger: desk, start: 'top top', end: '+=140%', pin: true, scrub: 1, animation: tl, onUpdate: (s) => { progress = s.progress; if (progress > 0.02) home(); } });
+  else st = ScrollTrigger.create({ trigger: desk, start: 'top top', end: '+=90%', pin: true, scrub: 1, animation: tl, onUpdate: (s) => { progress = s.progress; if (progress > 0.02) home(); } });
   desk.dataset.ready = '';
 }
 /* Once the morph starts, dragged pieces go back to their pins. */
@@ -122,17 +109,16 @@ if (fine && !reduce) {
   let mx = 0, my = 0, x = 0, y = 0;
   desk.addEventListener('pointermove', (e) => { mx = e.clientX / innerWidth - 0.5; my = e.clientY / innerHeight - 0.5; });
   gsap.ticker.add(() => {
-    if (!st?.isActive && scrollY > innerHeight * 2.5) return;
+    if (!st?.isActive && scrollY > innerHeight * 2) return;
     const k = 1 - Math.min(progress * 3, 1); x += (mx * k - x) * 0.08; y += (my * k - y) * 0.08;
-    const t = gsap.ticker.time;
-    data.forEach((d, i) => gsap.set(d.p, { x: -x * d.dep * 16, y: -y * d.dep * 11, rotation: i ? Math.sin(t * (0.7 + (i % 5) * 0.12) + i) * 1.6 * k : 0 }));
+    data.forEach((d, i) => gsap.set(d.p, { x: -x * d.dep * 16, y: -y * d.dep * 11, rotation: 0 }));
   });
 }
 let lw = innerWidth, lh = innerHeight, rt = 0;
 addEventListener('resize', () => {
   /* Touch browsers change height when the address bar hides; that is not a relayout. */
   if (innerWidth === lw && (innerHeight === lh || !fine)) return; lw = innerWidth; lh = innerHeight; clearTimeout(rt);
-  rt = window.setTimeout(() => { st?.kill(true); tl?.kill(); st = null; gsap.set(frs, { clearProps: 'transform' }); gsap.set('.d', { x: 0, y: 0 }); gsap.set([intro, head], { clearProps: 'all' }); progress = 0; dragged = false; build(); ScrollTrigger.refresh(); }, 250);
+  rt = window.setTimeout(() => { st?.kill(true); tl?.kill(); st = null; gsap.set(frs, { clearProps: 'transform' }); gsap.set('.d', { x: 0, y: 0 }); progress = 0; dragged = false; build(); ScrollTrigger.refresh(); }, 250);
 });
 const KEY = 'wall-y', nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
 const store = { get: () => { try { return sessionStorage.getItem(KEY); } catch { return null; } }, set: (v: string) => { try { sessionStorage.setItem(KEY, v); } catch { /* private mode */ } } };

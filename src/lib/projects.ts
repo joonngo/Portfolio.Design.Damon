@@ -4,6 +4,7 @@ export interface Project {
   title: string; slug: string; client: string; scope: string; industry: string;
   year?: string; role?: string; code: string; featured: boolean; order: number;
   cover?: Img; gallery: Img[]; swatches: { name: string; hex: string }[];
+  tags: string[];
   credits?: { name: string; role: string }[];
   brief?: string; approach?: string; result?: string; link?: string; draft: boolean;
 }

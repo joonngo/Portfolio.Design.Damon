@@ -8,7 +8,8 @@ if (home) {
     const u = new URL(a.href, location.href); if (u.origin !== location.origin || u.pathname !== BASE) return;
     if (u.hash && !document.getElementById(u.hash.slice(1))) return;
     if (a.classList.contains('skip')) return;
-    e.preventDefault(); if (u.href !== location.href) history.pushState(null, '', u.href);
+    e.preventDefault(); if (u.href !== location.href) history.pushState(null, '', BASE + u.hash);
+    if (a.dataset.project) document.dispatchEvent(new CustomEvent('pick-project', { detail: a.dataset.project }));
     if (u.hash) scroller.section(u.hash.slice(1)); else scroller.to(0);
   });
   let hash = location.hash;

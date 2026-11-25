@@ -8,6 +8,7 @@ code: MOVE
 featured: true
 order: 4
 draft: false
+tags: [Brand]
 role: Art Director
 cover:
   src: /src/assets/projects/MOVE_cover.jpg

@@ -4,38 +4,32 @@ import { href } from '../lib/url';
 import ProjectImage from './ProjectImage.astro';
 import T from './T.astro';
 const { items, extra } = Astro.props as { items: Project[]; extra?: Project[] };
-/* Real pictures only: galleries of the selected projects, then archive covers. */
+/* Few, larger pictures: one or two per selected project. */
 const onWall = items.slice(0, 8);
-const size = (g: any) => { const r = g.src.width / g.src.height, w = Math.round(Math.max(60, Math.min(128, Math.sqrt(7600 * r)))); return { w, ar: `${g.src.width}/${g.src.height}` }; };
-const each = onWall.filter((p) => p.gallery.length).length > 3 ? 2 : 5;
+const size = (g: any) => { const r = g.src.width / g.src.height, w = Math.round(Math.max(84, Math.min(190, Math.sqrt(15500 * r)))); return { w, ar: `${g.src.width}/${g.src.height}` }; };
 const shots = [
-  ...onWall.flatMap((p) => p.gallery.slice(0, each).map((g, k) => ({ p, img: g, lab: g.caption ?? `Image ${k + 1}`, to: `/work/${p.slug}`, ...size(g) }))),
-  ...(extra ?? []).filter((p) => p.cover).slice(0, 4).map((p) => ({ p, img: p.cover!, lab: p.code, to: '/#archive', ...size(p.cover) })),
-].slice(0, 12).map((x, i, all) => ({ ...x, m: i < 3 || (i >= all.length - 3 && all.length > 5) }));
+  ...onWall.slice(0, 1).flatMap((p) => p.gallery.slice(onWall.length > 1 ? 1 : 0, 2).map((g) => ({ p, img: g }))),
+  ...onWall.slice(1).map((p) => ({ p, img: p.cover ?? p.gallery[0] })).filter((x) => x.img),
+].slice(0, 5).map(({ p, img }) => ({ p, img: img!, lab: p.code, to: `/work/${p.slug}`, ...size(img) }));
 const fact = items.some((p) => p.code === 'MLN' && p.result?.includes('1B+ VND'));
 const cover = items[0];
-const bars = [0,2,4,7,9,13,15,16,20,23,25,29,31,34,38,40,43,45,49,52,54,58,61,63,66,70,72,75,79,81,84,88,90];
 ---
-<section id="desk" aria-label="Studio wall">
+<section id="desk" aria-label="Introduction">
+  <div id="intro">
+    <p class="m avail"><span class="blink"></span>Available for freelance</p>
+    <h1>Art direction for brand, packaging and campaigns.</h1>
+    <p class="who">Damon Ngo, Media Leader at MOVE. 5+ years in F&amp;B and retail, now electric vehicles.</p>
+    <p class="acts"><a class="hire" href={href('/#contact')}>Start a project</a><a class="u" href={href('/#work')}>See the work</a></p>
+    <p class="m mute tip"><span class="dragtip">Drag the pieces. Line the blue mark up with the black one.</span></p>
+  </div>
   <div id="cells" aria-hidden="true"></div>
-  <div id="intro"><h1>Art direction for brand, packaging and campaigns. 5+ years in F&amp;B and retail, now electric vehicles.</h1><p class="m mute tip"><span class="dragtip">Drag the pieces. Line the blue mark up with the black one. </span>Scroll for the contact sheet.</p><p class="m avail"><span class="blink"></span>Available for freelance</p></div>
-  <div id="sheetHead"><h2>Selected, {String(items.length).padStart(2, '0')}</h2><p class="m mute">Contact sheet. {items.length} projects, <span id="count"></span> pieces.</p></div>
   <div id="wall">
     {cover && <a class="frag big" data-lab="Cover" href={href(`/work/${cover.slug}`)} data-cur="Drag" draggable="false"><div class="d"><div class="p">
-      <div class="crop" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="dim m" aria-hidden="true">{cover.cover ? `${cover.cover.src.width} × ${cover.cover.src.height}` : '1600 × 1200'}</div>
-      <ProjectImage img={cover.cover} file={cover.code === 'MLN' ? 'MLN_tet26_cover.jpg' : `${cover.code}_cover.jpg`} client={cover.client} widths={[400, 800, 1200]} sizes="(max-width:700px) 52vw, (max-width:900px) 30vw, 540px" eager style={cover.cover ? `aspect-ratio:${cover.cover.src.width}/${cover.cover.src.height}` : undefined} />
-      <div class="cap m"><span><T t={cover.client} /></span><span class="mute"><T t={cover.scope} /></span></div></div></div></a>}
-    {shots.map(({ p, img, lab, to, w, ar, m }) => <a class="frag" data-m={m ? 1 : 0} data-lab={lab} href={href(to)} data-cur="Drag" draggable="false"><span class="vh">{p.client}, {lab}</span><div class="d" aria-hidden="true"><div class="p"><ProjectImage img={img} file="" client={p.client} widths={[w * 2]} sizes={`${w}px`} style={`width:${w}px;aspect-ratio:${ar}`} /></div></div></a>)}
-    {onWall.filter((p) => p.swatches.length).map((p, i) => <div class="frag" data-m={i < 3 ? 1 : 0} data-lab="Swatch" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="sw">{p.swatches[0] ? <i style={`background:${p.swatches[0].hex}`}></i> : <i class="fpo"></i>}<div class="m">{p.swatches[0]?.hex.toUpperCase() ?? 'HEX TBC'}<br /><span class="mute">{p.code}</span></div></div></div></div></div>)}
-    <div class="frag" data-m="1" data-lab="Dieline" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><svg width="118" height="72" viewBox="0 0 190 116" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 18A260 260 0 0 1 182 18L162 96A190 190 0 0 0 28 96Z"/><path d="M18 40A230 230 0 0 1 172 40" stroke-dasharray="4 4"/><text x="8" y="114" fill="currentColor" stroke="none" font-size="13" font-family="IBM Plex Mono">cup_16oz.ai</text></svg></div></div></div>
-    <div class="frag" data-m="0" data-lab="Barcode" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="note auto"><svg width="92" height="24" viewBox="0 0 92 24" fill="currentColor">{bars.map((x, i) => <rect x={x} y="0" width={i % 4 === 1 ? 2 : 1} height="24" />)}</svg><div class="m">EAN TBC</div></div></div></div></div>
-    {['currentColor', 'var(--accent)'].map((c, i) => <div class="frag" data-reg={i ? 'b' : 'k'} data-m={i ? 0 : 1} data-lab="Reg" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><svg width="20" height="20" viewBox="0 0 30 30" fill="none" stroke={c}><circle cx="15" cy="15" r="8"/><path d="M15 0v30M0 15h30"/></svg></div></div></div>)}
+      <ProjectImage img={cover.cover} file={`${cover.code}_cover.jpg`} client={cover.client} widths={[400, 800, 1200]} sizes="(max-width:900px) 62vw, 540px" eager style={cover.cover ? `aspect-ratio:${cover.cover.src.width}/${cover.cover.src.height}` : undefined} /></div></div></a>}
+    {shots.map(({ p, img, lab, to, w, ar }, i) => <a class="frag" data-m={i < 4 ? 1 : 0} data-lab={lab} href={href(to)} data-cur="Drag" draggable="false" style={`--w:${w}px`}><span class="vh">{p.client}</span><div class="d" aria-hidden="true"><div class="p"><ProjectImage img={img} file="" client={p.client} widths={[w, w * 2]} sizes={`${w}px`} class="shot" style={`aspect-ratio:${ar}`} /></div></div></a>)}
+    {['currentColor', 'var(--accent)'].map((c, i) => <div class="frag" data-reg={i ? 'b' : 'k'} data-m="0" data-lab="Reg" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><svg width="26" height="26" viewBox="0 0 30 30" fill="none" stroke={c} stroke-width="1.2"><circle cx="15" cy="15" r="8"/><path d="M15 0v30M0 15h30"/></svg></div></div></div>)}
     <div class="frag" data-m="1" data-stamp data-lab="Stamp" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="stamp" lang="vi">DUYỆT IN<div class="m">approved</div></div></div></div></div>
-    <div class="frag" data-m="1" data-lab="Note" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="note tape m" lang="vi">đừng sửa nữa.</div></div></div></div>
-    <div class="frag" data-m="1" data-lab="Fact" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="fact m"><b>5+</b>years</div></div></div></div>
-    <div class="frag" data-m="0" data-lab="Note" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="note tape m">Grid 12 col<br />gutter 24</div></div></div></div>
-    {fact && <div class="frag" data-m="1" data-lab="Fact" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="fact m"><b>1B+ VND</b>holiday season</div></div></div></div>}
+    {fact && <div class="frag" data-m="0" data-lab="Result" data-cur="Drag" aria-hidden="true"><div class="d"><div class="p"><div class="fact m"><b>1B+ VND</b>Milano, holiday season</div></div></div></div>}
   </div>
-  <div class="ticker m" aria-hidden="true"><div>{[0, 1].map(() => items.map((p) => <span><T t={p.client} />, <T t={p.scope} /></span>))}</div></div>
 </section>
 <script>import '../scripts/wall';</script>

@@ -2,17 +2,17 @@ import { test, expect } from './util';
 import type { Page } from '@playwright/test';
 const fill = async (p: Page) => {
   await p.goto(''); await p.waitForSelector('#flow[data-ready]');
-  await p.getByRole('button', { name: 'Packaging' }).click(); await p.getByRole('button', { name: '20–50M VND' }).click(); await p.getByRole('button', { name: '1–3 months' }).click();
+  await p.locator('#flow').getByRole('button', { name: 'Packaging' }).click(); await p.getByRole('button', { name: '20–50M VND' }).click(); await p.getByRole('button', { name: '1–3 months' }).click();
   await p.getByLabel('Message').fill('Hi'); await p.getByLabel('Message').press('Enter'); await p.getByLabel('Message').pressSequentially('there');
   await p.getByLabel('Name', { exact: true }).fill('Ly'); await p.getByLabel('Email', { exact: true }).fill('a@b.co');
 };
 const endpoint = (p: Page) => p.locator('#flow').evaluate((e: HTMLElement) => { e.dataset.endpoint = 'https://form.test/x'; });
 test('steps, back, newline, mail draft', async ({ page }) => {
   await page.goto(''); await page.waitForSelector('#flow[data-ready]');
-  for (const o of ['Brand', 'Packaging', 'Campaign', 'Other']) await expect(page.getByRole('button', { name: o, exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Brand', exact: true }).focus(); await page.keyboard.press('Enter');
+  for (const o of ['Brand', 'Packaging', 'Campaign', 'Other']) await expect(page.locator('#flow').getByRole('button', { name: o, exact: true })).toBeVisible();
+  await page.locator('#flow').getByRole('button', { name: 'Brand', exact: true }).focus(); await page.keyboard.press('Enter');
   for (const o of ['Under 20M VND', '20–50M VND', 'Over 50M VND', 'Not sure yet']) await expect(page.getByRole('button', { name: o })).toBeVisible();
-  await page.getByRole('button', { name: 'Back' }).click(); await expect(page.getByRole('button', { name: 'Brand', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Back' }).click(); await expect(page.locator('#flow').getByRole('button', { name: 'Brand', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await fill(page); await expect(page.getByLabel('Message')).toHaveValue('Hi\nthere');
   await page.getByRole('button', { name: 'Send' }).click();
   await expect(page.getByRole('link', { name: 'Open the email draft' })).toHaveAttribute('href', /^mailto:.*Packaging/);
@@ -34,7 +34,7 @@ test('Vietnamese line; About has employers, no years', async ({ page }) => {
   await page.goto(''); await expect(page.locator('[lang=vi]', { hasText: 'Nhắn tiếng Việt cũng được' })).toBeVisible();
   await page.goto(''); const t = await page.locator('#about').innerText(); for (const c of ['MOVE', 'Milano Coffee Vietnam', 'Gong Cha Vietnam']) expect(t).toContain(c); expect(t).not.toMatch(/\b20[12]\d\b/);
 });
-test('double click answers one question only', async ({ page }) => { await page.goto(''); await page.waitForSelector('#flow[data-ready]'); await page.getByRole('button', { name: 'Campaign', exact: true }).dblclick(); await expect(page.getByText('Rough budget?').first()).toBeVisible(); await expect(page.getByRole('button', { name: 'Under 1 month' })).toBeHidden(); });
+test('double click answers one question only', async ({ page }) => { await page.goto(''); await page.waitForSelector('#flow[data-ready]'); await page.locator('#flow').getByRole('button', { name: 'Campaign', exact: true }).dblclick(); await expect(page.getByText('Rough budget?').first()).toBeVisible(); await expect(page.getByRole('button', { name: 'Under 1 month' })).toBeHidden(); });
 test('answers can be copied; use of details is stated', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']); await fill(page); await expect(page.getByText('I only use this to reply to you.')).toBeVisible();
   await page.getByRole('button', { name: 'Send' }).click(); await page.getByRole('button', { name: 'Copy answers' }).click(); await expect(page.getByRole('button', { name: 'Copied' })).toBeVisible();

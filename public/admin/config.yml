@@ -29,6 +29,7 @@ collections:
       - { name: featured, label: 'Selected (tắt = Archive)', widget: boolean, default: false, required: false }
       - { name: order, label: Thứ tự, widget: number, value_type: int, default: 99 }
       - { name: draft, label: 'Nháp (không lên site)', widget: boolean, default: true, required: false }
+      - { name: tags, label: 'Loại việc (để lọc)', widget: select, multiple: true, required: false, options: [Brand, Packaging, Campaign] }
       - { name: year, label: Year, widget: string, required: false }
       - { name: role, label: Role, widget: string, required: false }
       - { name: cover, label: Cover, widget: object, required: false, collapsed: true, fields: [{ name: src, label: Ảnh, widget: image, required: false }, { name: alt, label: Alt, widget: string, required: false }] }

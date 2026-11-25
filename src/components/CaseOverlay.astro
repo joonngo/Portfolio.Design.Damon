@@ -1,2 +1,5 @@
-<dialog id="case" aria-label="Case study"><div class="dbar m"><span id="caseName"></span><button type="button" class="dclose" data-cur="Close">Close</button></div><div id="caseBody" data-lenis-prevent></div></dialog>
+---
+import { href } from '../lib/url';
+---
+<dialog id="case" aria-label="Case study"><div class="dbar"><span id="caseName" class="m"></span><span class="dr"><a class="hire" href={href('/#contact')} id="caseHire">Start a project</a><button type="button" class="dclose" data-cur="Close">Close</button></span></div><div id="caseBody" data-lenis-prevent></div></dialog>
 <script>import '../scripts/case';</script>

@@ -8,6 +8,7 @@ code: CKB
 featured: true
 order: 5
 draft: false
+tags: [Brand, Packaging]
 cover:
   src: /src/assets/projects/CKB_cover.jpg
   alt: Chạm kem bơ brand guideline cover in avocado green

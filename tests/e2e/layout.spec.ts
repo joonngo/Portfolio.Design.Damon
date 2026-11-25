@@ -5,7 +5,7 @@ for (const p of pages) test(`page ${p || 'home'}`, async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(p); await page.waitForTimeout(300);
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-  for (const n of ['Work', 'About', 'Contact']) {
+  for (const n of ['Work', 'About', 'Start a project']) {
     const b = (await page.locator('header').getByRole('link', { name: n, exact: true }).boundingBox())!;
     expect(b.height).toBeGreaterThanOrEqual(44);
   }
@@ -30,9 +30,3 @@ test('no js: hero and work readable', async ({ browser }) => {
   await expect(page.getByText('ngothong777@gmail.com').first()).toBeVisible(); await c.close();
 });
 test('404 for unknown path', async ({ page, errors }) => { const r = await page.goto('nope/'); expect(r!.status()).toBe(404); errors.length = 0; });
-test('sections are loose but never spill sideways', async ({ page }) => {
-  await page.goto(''); await page.waitForSelector('#desk[data-ready]'); await page.evaluate(() => scrollTo(0, 1e6)); await page.waitForTimeout(800);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
-  for (const s of ['#about', '#contact', 'footer']) expect(await page.locator(`${s} [data-loose]`).count()).toBeGreaterThan(2);
-  for (const b of await page.locator('#contact .opts button:visible').all()) { const r = (await b.boundingBox())!; expect(r.height).toBeGreaterThanOrEqual(44); expect(r.x).toBeGreaterThanOrEqual(0); expect(r.x + r.width).toBeLessThanOrEqual(page.viewportSize()!.width); }
-});

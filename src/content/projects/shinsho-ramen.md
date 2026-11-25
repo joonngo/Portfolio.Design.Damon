@@ -8,6 +8,7 @@ code: SHS
 featured: true
 order: 2
 draft: false
+tags: [Brand, Packaging]
 cover:
   src: /src/assets/projects/SHS_togo.jpg
   alt: Shinsho Ramen to go poster with noodles lifted from a black takeaway bowl

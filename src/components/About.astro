@@ -2,14 +2,11 @@
 import { Picture } from 'astro:assets';
 import damon from '../assets/damon.jpg';
 import T from './T.astro';
-import { href } from '../lib/url';
 const jobs = [['MOVE', 'Media Leader. Electric vehicles, part of Đông Dương Group.', 'Now'], ['Milano Coffee Vietnam', 'Graphic design and media. F&B, coffee.', 'Before'], ['Gong Cha Vietnam', 'Graphic design. F&B, bubble tea.', 'Before']];
-const strips = ['I run media', 'at MOVE', 'and take on brand,', 'packaging and campaign', 'work of my own.'];
 ---
 <section class="band about" id="about" tabindex="-1">
-  <h2 class="strips" data-rv="strips">{strips.map((s, i) => <><span class={`st s${i}`}>{s}</span>{' '}</>)}</h2>
-  <figure class="portrait" data-loose data-toss data-par="-0.08" data-rv="img" style="--r:5deg" data-cur="Drag"><Picture src={damon} alt="Damon Ngo, seated, black and white portrait" formats={['avif', 'webp']} widths={[320, 640]} sizes="(max-width:900px) 70vw, 27vw" pictureAttributes={{ class: 'pic' }} /><figcaption class="m mute">Damon.13</figcaption></figure>
-  <div class="slip bio m" data-loose data-toss data-par="0.07" style="--r:-3deg" data-cur="Drag"><p>Art director in <span lang="vi">Hồ Chí Minh</span>. 5+ years of graphic design and media for F&amp;B and retail, now electric vehicles.</p></div>
-  <ul class="jobs" aria-label="Where I have worked">{jobs.map(([a, b, c], i) => <li data-loose data-toss data-par={[0.04, -0.05, 0.08][i]} style={`--r:${[-4, 3, -7][i]}deg`} data-cur="Drag"><span class="m mute">{c}</span><b>{a}</b><span class="m"><T t={b} /></span></li>)}</ul>
-  <div class="slip svc m" data-loose data-toss data-par="-0.04" style="--r:6deg"><p class="mute">Freelance</p><p>Brand guideline<br />Packaging, seasonal cups<br />Campaign key visuals</p><a class="go" href={href('/#contact')}>Start a project ↗</a></div>
+  <div data-rv="img" class="portrait"><Picture src={damon} alt="Damon Ngo, seated, black and white portrait" formats={['avif', 'webp']} widths={[400, 800]} sizes="(max-width:700px) 92vw, 36vw" pictureAttributes={{ class: 'pic' }} /></div>
+  <div><h2>I run media at MOVE and take on brand, packaging and campaign work of my own.</h2>
+  <p class="bio">Art director in <span lang="vi">Hồ Chí Minh</span>. 5+ years of graphic design and media for F&amp;B and retail, now electric vehicles.</p>
+  <table><caption class="m mute">Where I have worked</caption><tbody>{jobs.map(([a, b, c]) => <tr><th scope="row">{a}</th><td><T t={b} /></td><td class="m mute">{c}</td></tr>)}</tbody></table></div>
 </section>

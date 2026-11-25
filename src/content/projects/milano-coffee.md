@@ -8,6 +8,7 @@ code: MLN
 featured: true
 order: 1
 draft: false
+tags: [Packaging, Campaign]
 cover:
   src: /src/assets/projects/MLN_tet_cover.jpg
   alt: Milano Coffee red Lunar New Year cup with a lion dance illustration and gold ribbon

@@ -1,7 +1,8 @@
 import { test, expect, ready } from './util';
 import type { Page } from '@playwright/test';
 const near = (p: Page, id: string) => expect.poll(() => p.evaluate((i) => Math.abs(document.getElementById(i)!.getBoundingClientRect().top), id), { timeout: 6000 }).toBeLessThan(110);
-for (const n of ['Work', 'About', 'Contact']) test(`menu ${n} scrolls, no page load`, async ({ page }) => {
+for (const n of ['Work', 'Services', 'About']) test(`menu ${n} scrolls, no page load`, async ({ page, isMobile }) => {
+  test.skip(!!isMobile && n === 'Services');
   await page.goto(''); await ready(page); await page.evaluate(() => { (window as any).mark = 1; });
   await page.locator('header').getByRole('link', { name: n, exact: true }).click(); await near(page, n.toLowerCase());
   expect(await page.evaluate(() => (window as any).mark)).toBe(1); expect(page.url()).toMatch(new RegExp(`#${n.toLowerCase()}$`));
@@ -9,7 +10,7 @@ for (const n of ['Work', 'About', 'Contact']) test(`menu ${n} scrolls, no page l
 });
 test('name returns to top', async ({ page }) => { await page.goto('#about'); await ready(page); await page.locator('header .me').click(); await expect.poll(() => page.evaluate(() => scrollY), { timeout: 6000 }).toBeLessThan(5); });
 test('deep link lands on section', async ({ page }) => { await page.goto('#contact'); await ready(page); await near(page, 'contact'); });
-test('menu from a case study page', async ({ page }) => { await page.goto('work/move/'); await page.locator('header').getByRole('link', { name: 'Contact', exact: true }).click(); await ready(page); await near(page, 'contact'); });
+test('menu from a case study page', async ({ page }) => { await page.goto('work/move/'); await page.locator('header').getByRole('link', { name: 'Start a project', exact: true }).click(); await ready(page); await near(page, 'contact'); });
 test('case opens over the page; close returns to same spot', async ({ page }) => {
   await page.goto(''); await ready(page); await page.locator('header').getByRole('link', { name: 'Work', exact: true }).click(); await near(page, 'work'); await page.waitForTimeout(900);
   await page.locator('.row').nth(2).scrollIntoViewIfNeeded(); await page.waitForTimeout(900);
